@@ -12,7 +12,7 @@ import argparse
 import os
 import pprint
 import shutil
-
+import datetime
 import torch
 import torch.nn.parallel
 import torch.backends.cudnn as cudnn
@@ -75,6 +75,7 @@ def parse_args():
 
 def main():
     args = parse_args()
+    start_time = str(datetime.datetime.now())
     update_config(cfg, args)
 
     logger, final_output_dir, tb_log_dir = create_logger(
@@ -217,6 +218,11 @@ def main():
     )
     torch.save(model.module.state_dict(), final_model_state_file)
     writer_dict['writer'].close()
+    end_time = str(datetime.datetime.now())
+    file = open("train_time.txt", "w")
+    file.write(start_time)
+    file.write(end_time)
+    file.close()
 
 
 if __name__ == '__main__':
