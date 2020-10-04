@@ -1,5 +1,5 @@
 import os
-import datatime
+import datetime
 start_time = str(datetime.datetime.now())
 end_time = str(datetime.datetime.now())
 file = open("train_time.txt", "w")
