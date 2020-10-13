@@ -355,7 +355,7 @@ class SemanticPoseHighResolutionNet(nn.Module):
 
         self.pretrained_layers = cfg['MODEL']['EXTRA']['PRETRAINED_LAYERS']
         ### Semantic-block i
-        self.semantic_block = SemanticBlock(i=0, pre_stage_channels[0], cfg.MODEL.NUM_JOINTS)
+        self.semantic_block = SemanticBlock(pre_stage_channels[0], cfg.MODEL.NUM_JOINTS)
     
     def _make_transition_layer(
             self, num_channels_pre_layer, num_channels_cur_layer):
