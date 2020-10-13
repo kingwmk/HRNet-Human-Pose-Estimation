@@ -3,7 +3,7 @@
 *.iml
 out
 gen
-
+w32_256x192_b128/*
 ### Vim template
 [._]*.s[a-w][a-z]
 [._]s[a-w][a-z]
