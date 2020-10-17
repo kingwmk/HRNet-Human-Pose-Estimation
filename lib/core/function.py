@@ -68,7 +68,7 @@ def semantic_train(config, train_loader, model, criterion, optimizer, epoch,
         # measure accuracy and record loss
         losses.update(loss.item(), input.size(0))
 
-        _, avg_acc, cnt, pred = accuracy(semantic_output.detach().cpu().numpy(),
+        _, avg_acc, cnt, pred = accuracy(semantic_outputs.detach().cpu().numpy(),
                                          target.detach().cpu().numpy())
         acc.update(avg_acc, cnt)
 
