@@ -524,7 +524,7 @@ class SemanticPoseHighResolutionNet(nn.Module):
             raise ValueError('{} is not exist!'.format(pretrained))
 
 
-def get_pose_semantic_net(cfg, is_train, **kwargs):
+def get_pose_net(cfg, is_train, **kwargs):
     model = SemanticPoseHighResolutionNet(cfg, **kwargs)
 
     if is_train and cfg.MODEL.INIT_WEIGHTS:
