@@ -1,11 +1,10 @@
-# IntelliJ project files
+IntelliJ project files
 .idea
 *.iml
 out
 gen
 
-
-# Vim template
+### Vim template
 [._]*.s[a-w][a-z]
 [._]s[a-w][a-z]
 *.un~
