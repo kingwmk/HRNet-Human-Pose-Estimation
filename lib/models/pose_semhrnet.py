@@ -271,7 +271,7 @@ class SemanticBlock(nn.Module):
         super(SemanticBlock, self).__init__()
             
         ### 3x3 group conv: in_channels --> in_channels
-        self.conv_1 = nn.Conv2d(in_channels, in_channels,padding=1, bias=False
+        self.conv_1 = nn.Conv2d(in_channels, in_channels,padding=1, bias=False,
                            kernel_size=3, groups=num_joints)
         
         self.bn1 = nn.BatchNorm2d(in_channels, momentum=BN_MOMENTUM)
