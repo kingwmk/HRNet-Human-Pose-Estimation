@@ -29,7 +29,7 @@ class SemanticMultiGroupConv(nn.Module):
         assert self.out_channels % self.groups == 0, \
                 "head number can not be divided by output channels"
 
-        self.gconv = nn.Conv2d(in_channels, output_channels, kernel_size, stride, 
+        self.gconv = nn.Conv2d(in_channels, out_channels, kernel_size, stride, 
                 padding, dilation, groups, bias=False)
         
 
