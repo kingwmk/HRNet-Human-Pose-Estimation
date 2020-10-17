@@ -95,7 +95,7 @@ def semantic_train(config, train_loader, model, criterion, optimizer, epoch,
             writer_dict['train_global_steps'] = global_steps + 1
 
             prefix = '{}_{}'.format(os.path.join(output_dir, 'train'), i)
-            save_debug_images(config, input, meta, target, pred*4, semantic_output,
+            save_debug_images(config, input, meta, target, pred*4, semantic_outputs,
                               prefix)
 
 def semantic_validate(config, val_loader, val_dataset, model, criterion, output_dir,
