@@ -43,17 +43,23 @@ def semantic_train(config, train_loader, model, criterion, optimizer, epoch,
 
         target = target.cuda(non_blocking=True)
         target_weight = target_weight.cuda(non_blocking=True)
+        
+        if isinstance(coarse_outputs, list):
+            loss1 = criterion(coarse_outputs[0], target, target_weight)
+            for output in coarse_outputs[1:]:
+                loss1 += criterion(output, target, target_weight)
+        else:
+            loss1 = criterion(coarse_outputs, target, target_weight)
 
         if isinstance(semantic_outputs, list):
-            loss = criterion(semantic_outputs[0], target, target_weight)
+            loss2 = criterion(semantic_outputs[0], target, target_weight)
             for semantic_output in semantic_outputs[1:]:
-                loss += criterion(semantic_output, target, target_weight)
+                loss2 += criterion(semantic_output, target, target_weight)
         else:
-            semantic_output = semantic_outputs
-            loss = criterion(semantic_output, target, target_weight)
+            loss2 = criterion(semantic_outputs, target, target_weight)
 
         # loss = criterion(output, target, target_weight)
-
+        loss = loss1 + loss2
         # compute gradient and do update step
         optimizer.zero_grad()
         loss.backward()
