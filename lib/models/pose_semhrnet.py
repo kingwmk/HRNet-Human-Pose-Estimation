@@ -489,7 +489,7 @@ class SemanticPoseHighResolutionNet(nn.Module):
         
         x_semantic_pred = self.final_layer(self.semantic_block(y_list[0]))
 
-        return x_coarse_pred
+        return x_coarse_pred,x_semantic_pred
 
     def init_weights(self, pretrained=''):
         logger.info('=> init weights from normal distribution')
