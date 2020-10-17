@@ -126,7 +126,7 @@ def semantic_validate(config, val_loader, val_dataset, model, criterion, output_
                 # input_flipped = model(input[:, :, :, ::-1])
                 input_flipped = np.flip(input.cpu().numpy(), 3).copy()
                 input_flipped = torch.from_numpy(input_flipped).cuda()
-                outputs_flipped = model(input_flipped)
+                _, outputs_flipped = model(input_flipped)
 
                 if isinstance(outputs_flipped, list):
                     output_flipped = outputs_flipped[-1]
