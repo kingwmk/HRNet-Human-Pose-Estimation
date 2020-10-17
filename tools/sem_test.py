@@ -18,7 +18,7 @@ import _init_paths
 from config import cfg
 from config import update_config
 from core.loss import JointsMSELoss
-from core.function import validate
+from core.function import semantic_validate
 from utils.utils import create_logger
 
 import dataset
@@ -115,7 +115,7 @@ def main():
     )
 
     # evaluate on validation set
-    validate(cfg, valid_loader, valid_dataset, model, criterion,
+    semantic_validate(cfg, valid_loader, valid_dataset, model, criterion,
              final_output_dir, tb_log_dir)
 
 
