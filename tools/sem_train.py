@@ -21,7 +21,7 @@ from config import cfg
 from config import update_config
 from core.loss import JointsMSELoss
 from core.function import semantic_train
-from core.function import validate
+from core.function import semantic_validate
 from utils.utils import get_optimizer
 from utils.utils import save_checkpoint
 from utils.utils import create_logger
