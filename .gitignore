@@ -3,8 +3,9 @@
 *.iml
 out
 gen
-w32_256x192_b128/*
-### Vim template
+
+
+# Vim template
 [._]*.s[a-w][a-z]
 [._]s[a-w][a-z]
 *.un~
