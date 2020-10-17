@@ -8,6 +8,8 @@ import logging
 import torch
 import torch.nn as nn
 
+from layers import SemanticMultiGroupConv
+
 
 BN_MOMENTUM = 0.1
 logger = logging.getLogger(__name__)
@@ -264,6 +266,33 @@ blocks_dict = {
     'BOTTLENECK': Bottleneck
 }
 
+class SemanticBlock(nn.Module):
+    def __init__(self, in_channels, num_joints):
+        super(SemanticBlock, self).__init__()
+            
+        ### 3x3 group conv: in_channels --> in_channels
+        self.conv_1 = nn.Conv2d(in_channels, in_channels,
+                           kernel_size=3, groups=num_joints)
+        
+        self.bn1 = nn.BatchNorm2d(in_channels, momentum=BN_MOMENTUM)
+        self.bn2 = nn.BatchNorm2d(in_channels, momentum=BN_MOMENTUM)
+        
+        self.relu = nn.ReLU(inplace=True)
+            
+        ### 3x3 Semantic conv: in_channels --> in_channels
+        self.conv_2 = SemanticMultiGroupConv(
+                in_channels, in_channels, 
+                kernel_size=3, groups= num_joints)
+        
+    def forward(self, x):
+        x = self.conv_1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        x = self.conv_2(x)
+        x = self.bn2(x)
+        x = self.relu(x)
+        return x
+
 
 class SemanticPoseHighResolutionNet(nn.Module):
 
@@ -281,6 +310,8 @@ class SemanticPoseHighResolutionNet(nn.Module):
         self.bn2 = nn.BatchNorm2d(64, momentum=BN_MOMENTUM)
         self.relu = nn.ReLU(inplace=True)
         self.layer1 = self._make_layer(Bottleneck, 64, 4)
+        
+        self.semantic_stages = 1
 
         self.stage2_cfg = cfg['MODEL']['EXTRA']['STAGE2']
         num_channels = self.stage2_cfg['NUM_CHANNELS']
@@ -314,7 +345,7 @@ class SemanticPoseHighResolutionNet(nn.Module):
         self.stage4, pre_stage_channels = self._make_stage(
             self.stage4_cfg, num_channels, multi_scale_output=False)
 
-        self.final_layer_coarse_pred = nn.Conv2d(
+        self.final_layer = nn.Conv2d(
             in_channels=pre_stage_channels[0],
             out_channels=cfg.MODEL.NUM_JOINTS,
             kernel_size=extra.FINAL_CONV_KERNEL,
@@ -323,8 +354,9 @@ class SemanticPoseHighResolutionNet(nn.Module):
         )
 
         self.pretrained_layers = cfg['MODEL']['EXTRA']['PRETRAINED_LAYERS']
-        self_semantic_layer = 
-
+        ### Semantic-block i
+        self.semantic_block = SemanticBlock(pre_stage_channels[0], cfg.MODEL.NUM_JOINTS)
+    
     def _make_transition_layer(
             self, num_channels_pre_layer, num_channels_cur_layer):
         num_branches_cur = len(num_channels_cur_layer)
@@ -453,9 +485,11 @@ class SemanticPoseHighResolutionNet(nn.Module):
                 x_list.append(y_list[i])
         y_list = self.stage4(x_list)
 
-        x = self.final_layer_coarse_pred(y_list[0])
+        x_coarse_pred = self.final_layer(y_list[0])
+        
+        x_semantic_pred = self.final_layer(self.semantic_block(y_list[0]))
 
-        return x
+        return x_coarse_pred
 
     def init_weights(self, pretrained=''):
         logger.info('=> init weights from normal distribution')
