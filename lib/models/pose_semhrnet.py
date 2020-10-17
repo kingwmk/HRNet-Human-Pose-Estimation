@@ -299,7 +299,7 @@ class SemanticPoseHighResolutionNet(nn.Module):
     def __init__(self, cfg, **kwargs):
         self.inplanes = 64
         extra = cfg.MODEL.EXTRA
-        super(PoseHighResolutionNet, self).__init__()
+        super(SemanticPoseHighResolutionNet, self).__init__()
 
         # stem net
         self.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=2, padding=1,
