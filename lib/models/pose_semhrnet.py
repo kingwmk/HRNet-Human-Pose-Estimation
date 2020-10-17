@@ -281,8 +281,8 @@ class SemanticBlock(nn.Module):
             
         ### 3x3 Semantic conv: in_channels --> in_channels
         self.conv_2 = SemanticMultiGroupConv(
-                in_channels, in_channels, 
-                kernel_size=3, groups= num_joints)
+                in_channels, in_channels,kernel_size=3, stride=1,
+                 padding=1, dilation=1, groups= num_joints)
         
     def forward(self, x):
         x = self.conv_1(x)
