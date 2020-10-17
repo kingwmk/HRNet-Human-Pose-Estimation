@@ -10,7 +10,7 @@ import torch.nn.functional as F
 class SemanticMultiGroupConv(nn.Module):
     global_progress = 0.0
     def __init__(self, in_channels, output_channels, kernel_size=3, stride=1,
-                 padding=0, dilation=1, groups=4):
+                 padding=1, dilation=1, groups=4):
         super(SemanticMultiGroupConv, self).__init__()
         self.norm = nn.BatchNorm2d(in_channels)
         self.relu = nn.ReLU(inplace=True)
@@ -29,15 +29,18 @@ class SemanticMultiGroupConv(nn.Module):
         assert self.out_channels % self.groups == 0, \
                 "head number can not be divided by output channels"
 
-        self.conv = nn.Conv2d(in_channels, output_channels, kernel_size, stride, 
+        self.gconv = nn.Conv2d(in_channels, output_channels, kernel_size, stride, 
                 padding, dilation, groups, bias=False)
+        
 
     def forward(self, x):
         """
         The code here is just a coarse implementation.
         The forward process can be quite slow and memory consuming, need to be optimized.
         """
-        b, c, h, w = x.size()
+        x = self.gconv(x)
+        b, c, h, w = x.size() 
+        
         x = self.norm(x)
         x = self.relu(x)
         x_averaged = self.avg_pool(x)
@@ -50,15 +53,14 @@ class SemanticMultiGroupConv(nn.Module):
 #        f_div_C = f / N
         
         x_vec = x_averaged.view(b, self.groups, -1)
-        theta_x = x_vec.permute(0, 2, 1)
-        
-        phi_x = x_averaged.view(b, self.groups, -1)
+        theta_x = x_vec       
+        phi_x = x_vec.permute(0, 2, 1) 
+
         aff = torch.matmul(theta_x, phi_x)
         
         N = aff.size(-1)
         aff_div_C = aff / N
         
-        x = self.conv(x)
         x = x.view(b, self.groups, -1)
         z = torch.matmul(aff_div_C, x)
         
