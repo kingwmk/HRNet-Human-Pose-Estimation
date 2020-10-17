@@ -8,7 +8,7 @@ import logging
 import torch
 import torch.nn as nn
 
-from layers import SemanticMultiGroupConv
+from models.layers import SemanticMultiGroupConv
 
 
 BN_MOMENTUM = 0.1
