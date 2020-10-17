@@ -349,6 +349,7 @@ class SemanticPoseHighResolutionNet(nn.Module):
             in_channels=pre_stage_channels[0],
             out_channels=cfg.MODEL.NUM_JOINTS,
             kernel_size=extra.FINAL_CONV_KERNEL,
+            groups = cfg.MODEL.NUM_JOINTS,
             stride=1,
             padding=1 if extra.FINAL_CONV_KERNEL == 3 else 0
         )
