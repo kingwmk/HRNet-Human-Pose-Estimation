@@ -20,7 +20,7 @@ import _init_paths
 from config import cfg
 from config import update_config
 from core.loss import JointsMSELoss
-from core.function import train
+from core.function import semantic_train
 from core.function import validate
 from utils.utils import get_optimizer
 from utils.utils import save_checkpoint
@@ -178,7 +178,7 @@ def main():
         lr_scheduler.step()
 
         # train for one epoch
-        train(cfg, train_loader, model, criterion, optimizer, epoch,
+        semantic_train(cfg, train_loader, model, criterion, optimizer, epoch,
               final_output_dir, tb_log_dir, writer_dict)
 
 
