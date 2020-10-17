@@ -183,7 +183,7 @@ def main():
 
 
         # evaluate on validation set
-        perf_indicator = validate(
+        perf_indicator = semantic_validate(
             cfg, valid_loader, valid_dataset, model, criterion,
             final_output_dir, tb_log_dir, writer_dict
         )
