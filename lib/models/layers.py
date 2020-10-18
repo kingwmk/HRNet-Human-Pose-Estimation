@@ -29,8 +29,10 @@ class SemanticMultiGroupConv(nn.Module):
         assert self.out_channels % self.groups == 0, \
                 "head number can not be divided by output channels"
 
-        self.gconv = nn.Conv2d(in_channels, out_channels, kernel_size, stride, 
+        self.gconv1 = nn.Conv2d(in_channels, out_channels, kernel_size, stride, 
                 padding, dilation, groups, bias=False)
+        self.gconv2 = nn.Conv2d(out_channels, out_channels*16, kernel_size=1, stride, 
+                padding=0, dilation, groups, bias=False)
         
 
     def forward(self, x):
@@ -38,12 +40,15 @@ class SemanticMultiGroupConv(nn.Module):
         The code here is just a coarse implementation.
         The forward process can be quite slow and memory consuming, need to be optimized.
         """
-        x = self.gconv(x)
+        x = self.gconv1(x)
         b, c, h, w = x.size() 
-        
         x = self.norm(x)
         x = self.relu(x)
-        x_averaged = self.avg_pool(x)
+        
+        aff_x = self.gconv2(x)
+        aff_x = self.norm(aff_x)
+        aff_x = self.relu(aff_x)
+        x_averaged = self.avg_pool(aff_x)
         
 #        theta_x = self.theta(x).view(batch_size, self.inter_channels, -1)
 #        theta_x = theta_x.permute(0, 2, 1)
