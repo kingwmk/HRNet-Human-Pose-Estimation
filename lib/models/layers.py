@@ -53,6 +53,7 @@ class SemanticMultiGroupConv(nn.Module):
 #        f_div_C = f / N
         
         x_vec = x_averaged.view(b, self.groups, -1)
+        print(x_vec.shape)
         theta_x = x_vec       
         phi_x = x_vec.permute(0, 2, 1) 
 
