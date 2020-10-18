@@ -37,6 +37,7 @@ class SemanticMultiGroupConv(nn.Module):
         kernel_size = 1
         self.gconv2 = nn.Conv2d(out_channels, aff_out_channels, kernel_size, stride, 
                 padding, dilation, groups, bias=False)
+        self.norm2 = nn.BatchNorm2d(aff_out_channels)
         
 
     def forward(self, x):
@@ -50,7 +51,7 @@ class SemanticMultiGroupConv(nn.Module):
         x = self.relu(x)
         
         aff_x = self.gconv2(x)
-        aff_x = self.norm(aff_x)
+        aff_x = self.norm2(aff_x)
         aff_x = self.relu(aff_x)
         x_averaged = self.avg_pool(aff_x)
         
