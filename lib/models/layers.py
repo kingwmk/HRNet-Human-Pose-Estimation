@@ -33,9 +33,10 @@ class SemanticMultiGroupConv(nn.Module):
                 padding, dilation, groups, bias=False)
         
         self.grid = 4*4
-        out_channels = self.grid * out_channels
-        self.gconv2 = nn.Conv2d(out_channels, out_channels, kernel_size=1, stride, 
-                padding=0, dilation, groups, bias=False)
+        aff_out_channels = self.grid * out_channels
+        kernel_size = 1
+        self.gconv2 = nn.Conv2d(out_channels, aff_out_channels, kernel_size, stride, 
+                padding, dilation, groups, bias=False)
         
 
     def forward(self, x):
