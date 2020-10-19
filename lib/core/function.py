@@ -74,7 +74,7 @@ def semantic_train(config, train_loader, model, criterion, optimizer, epoch,
           
 
         # loss = criterion(output, target, target_weight)
-        loss = loss1 + loss2 + loss3 + loss4
+        loss = loss1 + loss2 + loss3 + 2*loss4
         # compute gradient and do update step
         optimizer.zero_grad()
         loss.backward()
@@ -83,7 +83,7 @@ def semantic_train(config, train_loader, model, criterion, optimizer, epoch,
         # measure accuracy and record loss
         losses.update(loss.item(), input.size(0))
 
-        _, avg_acc, cnt, pred = accuracy(semantic_outputs.detach().cpu().numpy(),
+        _, avg_acc, cnt, pred = accuracy(semantic_outputs3.detach().cpu().numpy(),
                                          target.detach().cpu().numpy())
         acc.update(avg_acc, cnt)
 
