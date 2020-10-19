@@ -32,7 +32,7 @@ class SemanticMultiGroupConv(nn.Module):
         self.gconv1 = nn.Conv2d(in_channels, out_channels, kernel_size, stride, 
                 padding, dilation, groups, bias=False)
         
-        self.grid = 4*4
+        self.grid = 5*5
         aff_out_channels = self.grid * out_channels
         kernel_size = 1
         self.gconv2 = nn.Conv2d(out_channels, aff_out_channels, kernel_size, stride, 
