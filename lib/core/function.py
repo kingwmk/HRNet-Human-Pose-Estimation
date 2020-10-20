@@ -39,42 +39,35 @@ def semantic_train(config, train_loader, model, criterion, optimizer, epoch,
         data_time.update(time.time() - end)
 
         # compute output
-        coarse_outputs, semantic_outputs1, semantic_outputs2, semantic_outputs3  = model(input)
+        semantic_outputs1, semantic_outputs2, semantic_outputs3  = model(input)
 
         target = target.cuda(non_blocking=True)
         target_weight = target_weight.cuda(non_blocking=True)
-        
-        if isinstance(coarse_outputs, list):
-            loss1 = criterion(coarse_outputs[0], target, target_weight)
-            for output in coarse_outputs[1:]:
-                loss1 += criterion(output, target, target_weight)
-        else:
-            loss1 = criterion(coarse_outputs, target, target_weight)
 
         if isinstance(semantic_outputs1, list):
-            loss2 = criterion(semantic_outputs1[0], target, target_weight)
+            loss1 = criterion(semantic_outputs1[0], target, target_weight)
             for semantic_output in semantic_outputs1[1:]:
-                loss2 += criterion(semantic_output, target, target_weight)
+                loss1 += criterion(semantic_output, target, target_weight)
         else:
-            loss2 = criterion(semantic_outputs1, target, target_weight)
+            loss1 = criterion(semantic_outputs1, target, target_weight)
           
         if isinstance(semantic_outputs2, list):
-            loss3 = criterion(semantic_outputs2[0], target, target_weight)
+            loss2 = criterion(semantic_outputs2[0], target, target_weight)
             for semantic_output in semantic_outputs2[1:]:
-                loss3 += criterion(semantic_output, target, target_weight)
+                loss2 += criterion(semantic_output, target, target_weight)
         else:
-            loss3 = criterion(semantic_outputs2, target, target_weight)
+            loss2 = criterion(semantic_outputs2, target, target_weight)
           
         if isinstance(semantic_outputs3, list):
-            loss4 = criterion(semantic_outputs3[0], target, target_weight)
+            loss3 = criterion(semantic_outputs3[0], target, target_weight)
             for semantic_output in semantic_outputs3[1:]:
-                loss4 += criterion(semantic_output, target, target_weight)
+                loss3 += criterion(semantic_output, target, target_weight)
         else:
-            loss4 = criterion(semantic_outputs3, target, target_weight)          
+            loss3 = criterion(semantic_outputs3, target, target_weight)          
           
 
         # loss = criterion(output, target, target_weight)
-        loss = loss1 + loss2 + loss3 + 2*loss4
+        loss = loss1 + loss2 + loss3*2
         # compute gradient and do update step
         optimizer.zero_grad()
         loss.backward()
@@ -136,7 +129,7 @@ def semantic_validate(config, val_loader, val_dataset, model, criterion, output_
         end = time.time()
         for i, (input, target, target_weight, meta) in enumerate(val_loader):
             # compute output
-            _, _, _, outputs = model(input)
+            _, _, outputs = model(input)
             if isinstance(outputs, list):
                 output = outputs[-1]
             else:
@@ -147,7 +140,7 @@ def semantic_validate(config, val_loader, val_dataset, model, criterion, output_
                 # input_flipped = model(input[:, :, :, ::-1])
                 input_flipped = np.flip(input.cpu().numpy(), 3).copy()
                 input_flipped = torch.from_numpy(input_flipped).cuda()
-                _, _, _, outputs_flipped = model(input_flipped)
+                _, _, outputs_flipped = model(input_flipped)
 
                 if isinstance(outputs_flipped, list):
                     output_flipped = outputs_flipped[-1]
