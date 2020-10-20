@@ -344,45 +344,39 @@ class SemanticPoseHighResolutionNet(nn.Module):
             pre_stage_channels, num_channels)
         self.stage4, pre_stage_channels = self._make_stage(
             self.stage4_cfg, num_channels, multi_scale_output=False)
-
-        self.final_layer1 = nn.Conv2d(
-            in_channels=pre_stage_channels[0],
-            out_channels=cfg.MODEL.NUM_JOINTS,
-            kernel_size=extra.FINAL_CONV_KERNEL,
-            groups = cfg.MODEL.NUM_JOINTS,
-            stride=1,
-            padding=1 if extra.FINAL_CONV_KERNEL == 3 else 0
-        )
-        self.final_layer2 = nn.Conv2d(
-            in_channels=pre_stage_channels[0],
-            out_channels=cfg.MODEL.NUM_JOINTS,
-            kernel_size=extra.FINAL_CONV_KERNEL,
-            groups = cfg.MODEL.NUM_JOINTS,
-            stride=1,
-            padding=1 if extra.FINAL_CONV_KERNEL == 3 else 0
-        )
-        self.final_layer3 = nn.Conv2d(
-            in_channels=pre_stage_channels[0],
-            out_channels=cfg.MODEL.NUM_JOINTS,
-            kernel_size=extra.FINAL_CONV_KERNEL,
-            groups = cfg.MODEL.NUM_JOINTS,
-            stride=1,
-            padding=1 if extra.FINAL_CONV_KERNEL == 3 else 0
-        )
-        self.final_layer4 = nn.Conv2d(
-            in_channels=pre_stage_channels[0],
-            out_channels=cfg.MODEL.NUM_JOINTS,
-            kernel_size=extra.FINAL_CONV_KERNEL,
-            groups = cfg.MODEL.NUM_JOINTS,
-            stride=1,
-            padding=1 if extra.FINAL_CONV_KERNEL == 3 else 0
-        )
-
+        
         self.pretrained_layers = cfg['MODEL']['EXTRA']['PRETRAINED_LAYERS']
         ### Semantic-block i
-        self.semantic_block1 = SemanticBlock(pre_stage_channels[0], cfg.MODEL.NUM_JOINTS)
-        self.semantic_block2 = SemanticBlock(pre_stage_channels[0], cfg.MODEL.NUM_JOINTS)
-        self.semantic_block3 = SemanticBlock(pre_stage_channels[0], cfg.MODEL.NUM_JOINTS)
+        self.stage2_semantic_block = SemanticBlock(pre_stage_channels[0], cfg.MODEL.NUM_JOINTS)
+        self.stage3_semantic_block = SemanticBlock(pre_stage_channels[0], cfg.MODEL.NUM_JOINTS)
+        self.stage4_semantic_block = SemanticBlock(pre_stage_channels[0], cfg.MODEL.NUM_JOINTS)
+
+        self.stage2_predict_layer = nn.Conv2d(
+            in_channels=pre_stage_channels[0],
+            out_channels=cfg.MODEL.NUM_JOINTS,
+            kernel_size=extra.FINAL_CONV_KERNEL,
+            groups = cfg.MODEL.NUM_JOINTS,
+            stride=1,
+            padding=1 if extra.FINAL_CONV_KERNEL == 3 else 0
+        )
+        self.stage3_predict_layer = nn.Conv2d(
+            in_channels=pre_stage_channels[0],
+            out_channels=cfg.MODEL.NUM_JOINTS,
+            kernel_size=extra.FINAL_CONV_KERNEL,
+            groups = cfg.MODEL.NUM_JOINTS,
+            stride=1,
+            padding=1 if extra.FINAL_CONV_KERNEL == 3 else 0
+        )
+        self.stage4_predict_layer = nn.Conv2d(
+            in_channels=pre_stage_channels[0],
+            out_channels=cfg.MODEL.NUM_JOINTS,
+            kernel_size=extra.FINAL_CONV_KERNEL,
+            groups = cfg.MODEL.NUM_JOINTS,
+            stride=1,
+            padding=1 if extra.FINAL_CONV_KERNEL == 3 else 0
+        )
+
+
     
     def _make_transition_layer(
             self, num_channels_pre_layer, num_channels_cur_layer):
@@ -493,6 +487,9 @@ class SemanticPoseHighResolutionNet(nn.Module):
             else:
                 x_list.append(x)
         y_list = self.stage2(x_list)
+        
+        y_list[0] = self.stage2_semantic_block(y_list[0])
+        stage2_predict = self.stage2_predict_layer(y_list[0])
 
         x_list = []
         for i in range(self.stage3_cfg['NUM_BRANCHES']):
@@ -502,6 +499,9 @@ class SemanticPoseHighResolutionNet(nn.Module):
             else:
                 x_list.append(y_list[i])
         y_list = self.stage3(x_list)
+        
+        y_list[0] = self.stage3_semantic_block(y_list[0])
+        stage3_predict = self.stage3_predict_layer(y_list[0])
 
         x_list = []
         for i in range(self.stage4_cfg['NUM_BRANCHES']):
@@ -512,16 +512,15 @@ class SemanticPoseHighResolutionNet(nn.Module):
                 x_list.append(y_list[i])
         y_list = self.stage4(x_list)
         
-        x_semantic_1 = self.semantic_block1(y_list[0])
-        x_semantic_2 = self.semantic_block2(x_semantic_1)
-        x_semantic_3 = self.semantic_block3(x_semantic_2)
+        y_list[0] = self.stage4_semantic_block(y_list[0])
+        stage4_predict = self.stage4_predict_layer(y_list[0])
         
-        x_coarse_pred = self.final_layer1(y_list[0])
-        x_semantic_pred1 = self.final_layer2(x_semantic_1)
-        x_semantic_pred2 = self.final_layer3(x_semantic_2)
-        x_semantic_pred3 = self.final_layer4(x_semantic_3)
+#        x_coarse_pred = self.final_layer1(y_list[0])
+#        x_semantic_pred1 = self.final_layer2(x_semantic_1)
+#        x_semantic_pred2 = self.final_layer3(x_semantic_2)
+#        x_semantic_pred3 = self.final_layer4(x_semantic_3)
 
-        return x_coarse_pred, x_semantic_pred1, x_semantic_pred2, x_semantic_pred3
+        return stage2_predict, stage3_predict, stage4_predict
 
     def init_weights(self, pretrained=''):
         logger.info('=> init weights from normal distribution')
