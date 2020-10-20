@@ -154,7 +154,7 @@ class Bottleneck(nn.Module):
 class SemanticHighResolutionModule(nn.Module):
     def __init__(self, num_branches, blocks, num_blocks, num_inchannels,
                  num_channels, fuse_method, multi_scale_output=True, groups):
-        super(HighResolutionModule, self).__init__()
+        super(SemanticHighResolutionModule, self).__init__()
         self._check_branches(
             num_branches, blocks, num_blocks, num_inchannels, num_channels)
 
