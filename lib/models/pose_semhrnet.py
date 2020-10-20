@@ -522,7 +522,7 @@ class SemanticPoseHighResolutionNet(nn.Module):
         self.relu = nn.ReLU(inplace=True)
         self.layer1 = self._make_layer(Bottleneck, 64, 4)
         
-        self.semantic_stages = 1
+        self.groups = cfg['MODEL']['NUM_JOINTS']
 
         self.stage2_cfg = cfg['MODEL']['EXTRA']['STAGE2']
         num_channels = self.stage2_cfg['NUM_CHANNELS']
@@ -530,7 +530,7 @@ class SemanticPoseHighResolutionNet(nn.Module):
         num_channels = [
             num_channels[i] * block.expansion for i in range(len(num_channels))
         ]
-        self.transition1 = self._make_transition_layer([256], num_channels)
+        self.transition1 = self._make_transition_layer([256], num_channels,self.groups)
         self.stage2, pre_stage_channels = self._make_stage(
             self.stage2_cfg, num_channels)
 
@@ -590,7 +590,7 @@ class SemanticPoseHighResolutionNet(nn.Module):
 
     
     def _make_transition_layer(
-            self, num_channels_pre_layer, num_channels_cur_layer):
+            self, num_channels_pre_layer, num_channels_cur_layer, groups):
         num_branches_cur = len(num_channels_cur_layer)
         num_branches_pre = len(num_channels_pre_layer)
 
@@ -603,7 +603,8 @@ class SemanticPoseHighResolutionNet(nn.Module):
                             nn.Conv2d(
                                 num_channels_pre_layer[i],
                                 num_channels_cur_layer[i],
-                                3, 1, 1, bias=False
+                                3, 1, 1, groups = groups,
+                                bias=False
                             ),
                             nn.BatchNorm2d(num_channels_cur_layer[i]),
                             nn.ReLU(inplace=True)
@@ -620,7 +621,7 @@ class SemanticPoseHighResolutionNet(nn.Module):
                     conv3x3s.append(
                         nn.Sequential(
                             nn.Conv2d(
-                                inchannels, outchannels, 3, 2, 1, bias=False
+                                inchannels, outchannels, 3, 2, 1, groups = groups, bias=False
                             ),
                             nn.BatchNorm2d(outchannels),
                             nn.ReLU(inplace=True)
