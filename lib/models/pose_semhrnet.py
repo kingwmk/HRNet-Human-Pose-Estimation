@@ -23,17 +23,17 @@ def conv3x3(in_planes, out_planes, stride=1):
 def gconv3x3(in_planes, out_planes, groups=16, stride=1):
     """3x3 group convolution with padding"""
     return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride,
-                     padding=1, bias=False)
+                     padding=1, groups=groups, bias=False)
 
-class SemanticBasicBlock(nn.Module):
+class gBasicBlock(nn.Module):
     expansion = 1
 
     def __init__(self, inplanes, planes, groups, stride=1, downsample=None):
         super(BasicBlock, self).__init__()
-        self.conv1 = conv3x3(inplanes, planes, groups, stride)
+        self.conv1 = gconv3x3(inplanes, planes, groups, stride)
         self.bn1 = nn.BatchNorm2d(planes, momentum=BN_MOMENTUM)
         self.relu = nn.ReLU(inplace=True)
-        self.conv2 = conv3x3(planes, planes, groups)
+        self.conv2 = gconv3x3(planes, planes, groups)
         self.bn2 = nn.BatchNorm2d(planes, momentum=BN_MOMENTUM)
         self.downsample = downsample
         self.stride = stride
@@ -56,6 +56,28 @@ class SemanticBasicBlock(nn.Module):
 
         return out
 
+class SemanticBasicBlock(nn.Module):
+    expansion = 1
+
+    def __init__(self, inplanes, planes, groups, stride=1, downsample=None):
+        super(BasicBlock, self).__init__()
+
+        self.downsample = downsample
+        self.conv = SemanticMultiGroupConv(
+                inplanes, planes,kernel_size=3, stride=stride,
+                groups= groups)
+        
+    def forward(self, x):
+        residual = x
+        out = self.conv(x)
+
+        if self.downsample is not None:
+            residual = self.downsample(x)
+
+        out += residual
+        out = self.relu(out)
+
+        return out
 
 class BasicBlock(nn.Module):
     expansion = 1
@@ -474,7 +496,8 @@ class HighResolutionModule(nn.Module):
 blocks_dict = {
     'BASIC': BasicBlock,
     'BOTTLENECK': Bottleneck,
-    'SEMANTIC_BASIC': SemanticBasicBlock
+    'SEMANTIC_BASIC': SemanticBasicBlock,
+    'G_BASIC': gBasicBlock
 }
 
 class SemanticBlock(nn.Module):
