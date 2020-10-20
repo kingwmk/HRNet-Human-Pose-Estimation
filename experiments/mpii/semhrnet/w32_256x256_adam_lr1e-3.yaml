@@ -42,12 +42,7 @@ MODEL:
     - 'conv2'
     - 'bn2'
     - 'layer1'
-    - 'transition1'
-    - 'stage2'
-    - 'transition2'
-    - 'stage3'
-    - 'transition3'
-    - 'stage4'
+
     FINAL_CONV_KERNEL: 1
     STAGE2:
       NUM_MODULES: 1
