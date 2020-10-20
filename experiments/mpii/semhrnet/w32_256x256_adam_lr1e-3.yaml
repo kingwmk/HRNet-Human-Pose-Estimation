@@ -52,7 +52,7 @@ MODEL:
     STAGE2:
       NUM_MODULES: 1
       NUM_BRANCHES: 2
-      BLOCK: BASIC
+      BLOCK: SEMANTIC_BASIC
       NUM_BLOCKS:
       - 4
       - 4
@@ -63,7 +63,7 @@ MODEL:
     STAGE3:
       NUM_MODULES: 4
       NUM_BRANCHES: 3
-      BLOCK: BASIC
+      BLOCK: SEMANTIC_BASIC
       NUM_BLOCKS:
       - 4
       - 4
@@ -76,7 +76,7 @@ MODEL:
     STAGE4:
       NUM_MODULES: 3
       NUM_BRANCHES: 4
-      BLOCK: BASIC
+      BLOCK: SEMANTIC_BASIC
       NUM_BLOCKS:
       - 4
       - 4
