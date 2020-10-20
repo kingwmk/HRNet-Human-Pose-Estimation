@@ -29,7 +29,7 @@ class gBasicBlock(nn.Module):
     expansion = 1
 
     def __init__(self, inplanes, planes, groups, stride=1, downsample=None):
-        super(BasicBlock, self).__init__()
+        super(gBasicBlock, self).__init__()
         self.conv1 = gconv3x3(inplanes, planes, groups)
         self.bn1 = nn.BatchNorm2d(planes, momentum=BN_MOMENTUM)
         self.relu = nn.ReLU(inplace=True)
