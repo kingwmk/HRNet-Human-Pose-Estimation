@@ -8,6 +8,7 @@ import logging
 import torch
 import torch.nn as nn
 
+from models.layers import SemanticMultiGroupConv
 
 BN_MOMENTUM = 0.1
 logger = logging.getLogger(__name__)
@@ -264,13 +265,39 @@ blocks_dict = {
     'BOTTLENECK': Bottleneck
 }
 
+class SemanticBlock(nn.Module):
+    def __init__(self, in_channels, num_joints):
+        super(SemanticBlock, self).__init__()
+            
+        ### 3x3 group conv: in_channels --> in_channels
+        self.conv_1 = nn.Conv2d(in_channels, in_channels,padding=1, bias=False,
+                           kernel_size=3, groups=num_joints)
+        
+        self.bn1 = nn.BatchNorm2d(in_channels, momentum=BN_MOMENTUM)
+        self.bn2 = nn.BatchNorm2d(in_channels, momentum=BN_MOMENTUM)
+        
+        self.relu = nn.ReLU(inplace=True)
+            
+        ### 3x3 Semantic conv: in_channels --> in_channels
+        self.conv_2 = SemanticMultiGroupConv(
+                in_channels, in_channels,kernel_size=3, stride=1,
+                 padding=1, dilation=1, groups= num_joints)
+        
+    def forward(self, x):
+        x = self.conv_1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        x = self.conv_2(x)
+        x = self.bn2(x)
+        x = self.relu(x)
+        return x
 
-class PoseHighResolutionNet(nn.Module):
+class SemanticPoseHighResolutionNet(nn.Module):
 
     def __init__(self, cfg, **kwargs):
         self.inplanes = 64
         extra = cfg.MODEL.EXTRA
-        super(PoseHighResolutionNet, self).__init__()
+        super(SemanticPoseHighResolutionNet, self).__init__()
 
         # stem net
         self.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=2, padding=1,
@@ -314,10 +341,32 @@ class PoseHighResolutionNet(nn.Module):
         self.stage4, pre_stage_channels = self._make_stage(
             self.stage4_cfg, num_channels, multi_scale_output=False)
 
-        self.final_layer = nn.Conv2d(
+ ### Semantic-block i
+        self.stage2_semantic_block = SemanticBlock(pre_stage_channels[0], cfg.MODEL.NUM_JOINTS)
+        self.stage3_semantic_block = SemanticBlock(pre_stage_channels[0], cfg.MODEL.NUM_JOINTS)
+        self.stage4_semantic_block = SemanticBlock(pre_stage_channels[0], cfg.MODEL.NUM_JOINTS)
+
+        self.stage2_predict_layer = nn.Conv2d(
             in_channels=pre_stage_channels[0],
             out_channels=cfg.MODEL.NUM_JOINTS,
             kernel_size=extra.FINAL_CONV_KERNEL,
+            groups = cfg.MODEL.NUM_JOINTS,
+            stride=1,
+            padding=1 if extra.FINAL_CONV_KERNEL == 3 else 0
+        )
+        self.stage3_predict_layer = nn.Conv2d(
+            in_channels=pre_stage_channels[0],
+            out_channels=cfg.MODEL.NUM_JOINTS,
+            kernel_size=extra.FINAL_CONV_KERNEL,
+            groups = cfg.MODEL.NUM_JOINTS,
+            stride=1,
+            padding=1 if extra.FINAL_CONV_KERNEL == 3 else 0
+        )
+        self.stage4_predict_layer = nn.Conv2d(
+            in_channels=pre_stage_channels[0],
+            out_channels=cfg.MODEL.NUM_JOINTS,
+            kernel_size=extra.FINAL_CONV_KERNEL,
+            groups = cfg.MODEL.NUM_JOINTS,
             stride=1,
             padding=1 if extra.FINAL_CONV_KERNEL == 3 else 0
         )
@@ -434,6 +483,9 @@ class PoseHighResolutionNet(nn.Module):
                 x_list.append(x)
         y_list = self.stage2(x_list)
 
+        y_list[0] = self.stage2_semantic_block(y_list[0])
+        stage2_predict = self.stage2_predict_layer(y_list[0])        
+        
         x_list = []
         for i in range(self.stage3_cfg['NUM_BRANCHES']):
             # if self.transition2[i] is not None:
@@ -442,7 +494,10 @@ class PoseHighResolutionNet(nn.Module):
             else:
                 x_list.append(y_list[i])
         y_list = self.stage3(x_list)
-
+        
+        y_list[0] = self.stage3_semantic_block(y_list[0])
+        stage3_predict = self.stage3_predict_layer(y_list[0])
+        
         x_list = []
         for i in range(self.stage4_cfg['NUM_BRANCHES']):
             # if self.transition3[i] is not None:
@@ -451,10 +506,11 @@ class PoseHighResolutionNet(nn.Module):
             else:
                 x_list.append(y_list[i])
         y_list = self.stage4(x_list)
-
-        x = self.final_layer(y_list[0])
-
-        return x
+        
+        y_list[0] = self.stage4_semantic_block(y_list[0])
+        stage4_predict = self.stage4_predict_layer(y_list[0])
+        
+        return stage2_predict, stage3_predict, stage4_predict
 
     def init_weights(self, pretrained=''):
         logger.info('=> init weights from normal distribution')
@@ -490,7 +546,7 @@ class PoseHighResolutionNet(nn.Module):
 
 
 def get_pose_net(cfg, is_train, **kwargs):
-    model = PoseHighResolutionNet(cfg, **kwargs)
+    model = SemanticPoseHighResolutionNet(cfg, **kwargs)
 
     if is_train and cfg.MODEL.INIT_WEIGHTS:
         model.init_weights(cfg.MODEL.PRETRAINED)
