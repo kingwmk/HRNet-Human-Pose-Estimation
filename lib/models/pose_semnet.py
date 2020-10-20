@@ -161,6 +161,7 @@ class SemanticHighResolutionModule(nn.Module):
         self.num_inchannels = num_inchannels
         self.fuse_method = fuse_method
         self.num_branches = num_branches
+        self.groups = groups
 
         self.multi_scale_output = multi_scale_output
 
@@ -168,7 +169,7 @@ class SemanticHighResolutionModule(nn.Module):
             num_branches, blocks, num_blocks, num_channels)
         self.fuse_layers = self._make_fuse_layers()
         self.relu = nn.ReLU(True)
-        self.groups = groups
+
 
     def _check_branches(self, num_branches, blocks, num_blocks,
                         num_inchannels, num_channels):
