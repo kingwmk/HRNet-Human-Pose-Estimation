@@ -30,7 +30,7 @@ class gBasicBlock(nn.Module):
 
     def __init__(self, inplanes, planes, groups, stride=1, downsample=None):
         super(BasicBlock, self).__init__()
-        self.conv1 = gconv3x3(inplanes, planes, groups, stride)
+        self.conv1 = gconv3x3(inplanes, planes, groups)
         self.bn1 = nn.BatchNorm2d(planes, momentum=BN_MOMENTUM)
         self.relu = nn.ReLU(inplace=True)
         self.conv2 = gconv3x3(planes, planes, groups)
@@ -553,7 +553,7 @@ class SemanticPoseHighResolutionNet(nn.Module):
         num_channels = [
             num_channels[i] * block.expansion for i in range(len(num_channels))
         ]
-        self.transition1 = self._make_transition_layer([256], num_channels,self.groups)
+        self.transition1 = self._make_transition_layer([256], num_channels, self.groups)
         self.stage2, pre_stage_channels = self._make_stage(
             self.stage2_cfg, num_channels)
 
@@ -564,7 +564,7 @@ class SemanticPoseHighResolutionNet(nn.Module):
             num_channels[i] * block.expansion for i in range(len(num_channels))
         ]
         self.transition2 = self._make_transition_layer(
-            pre_stage_channels, num_channels)
+            pre_stage_channels, num_channels, self.groups)
         self.stage3, pre_stage_channels = self._make_stage(
             self.stage3_cfg, num_channels)
 
@@ -575,7 +575,7 @@ class SemanticPoseHighResolutionNet(nn.Module):
             num_channels[i] * block.expansion for i in range(len(num_channels))
         ]
         self.transition3 = self._make_transition_layer(
-            pre_stage_channels, num_channels)
+            pre_stage_channels, num_channels ,self.groups)
         self.stage4, pre_stage_channels = self._make_stage(
             self.stage4_cfg, num_channels, multi_scale_output=False)
         
@@ -691,14 +691,14 @@ class SemanticPoseHighResolutionNet(nn.Module):
                 reset_multi_scale_output = True
 
             modules.append(
-                HighResolutionModule(
+                SemanticHighResolutionModule(
                     num_branches,
                     block,
                     num_blocks,
                     num_inchannels,
                     num_channels,
                     fuse_method,
-                    reset_multi_scale_output
+                    reset_multi_scale_output, self.groups
                 )
             )
             num_inchannels = modules[-1].get_num_inchannels()
