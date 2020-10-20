@@ -67,7 +67,7 @@ def semantic_train(config, train_loader, model, criterion, optimizer, epoch,
           
 
         # loss = criterion(output, target, target_weight)
-        loss = loss1 + loss2 + loss3*2
+        loss = loss1 + loss2 + loss3
         # compute gradient and do update step
         optimizer.zero_grad()
         loss.backward()
