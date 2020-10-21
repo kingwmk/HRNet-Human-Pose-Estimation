@@ -273,8 +273,9 @@ class HighResolutionModule(nn.Module):
 #                    y = torch.cat ( (y , self.fuse_layers[i][j](x[j])), dim=1)
                     y = y + self.fuse_layers[i][j](x[j])
             x_fuse.append(self.relu(y))
-
-        return x_fuse, sem_fuse
+        if self.last_module:
+            return x_fuse, sem_fuse
+        return x_fuse
 
 blocks_dict = {
     'BASIC': BasicBlock,
