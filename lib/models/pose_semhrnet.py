@@ -331,10 +331,13 @@ class SemanticPoseHighResolutionNet(nn.Module):
         num_channels = [
             num_channels[i] * block.expansion for i in range(len(num_channels))
         ]
+        
+       
         self.transition1 = self._make_transition_layer([256], num_channels)
         self.stage2, pre_stage_channels = self._make_stage(
             self.stage2_cfg, num_channels)
-
+        stage2_sem_in_channels = num_channels[0]*self.stage2_cfg['NUM_BRANCHES']
+        
         self.stage3_cfg = cfg['MODEL']['EXTRA']['STAGE3']
         num_channels = self.stage3_cfg['NUM_CHANNELS']
         block = blocks_dict[self.stage3_cfg['BLOCK']]
@@ -345,7 +348,8 @@ class SemanticPoseHighResolutionNet(nn.Module):
             pre_stage_channels, num_channels)
         self.stage3, pre_stage_channels = self._make_stage(
             self.stage3_cfg, num_channels)
-
+        stage3_sem_in_channels = num_channels[0]*self.stage3_cfg['NUM_BRANCHES']
+        
         self.stage4_cfg = cfg['MODEL']['EXTRA']['STAGE4']
         num_channels = self.stage4_cfg['NUM_CHANNELS']
         block = blocks_dict[self.stage4_cfg['BLOCK']]
@@ -356,11 +360,12 @@ class SemanticPoseHighResolutionNet(nn.Module):
             pre_stage_channels, num_channels)
         self.stage4, pre_stage_channels = self._make_stage(
             self.stage4_cfg, num_channels, multi_scale_output=False)
+        stage4_sem_in_channels = num_channels[0]*self.stage4_cfg['NUM_BRANCHES']
 
  ### Semantic-block i
-        self.stage2_semantic_block = SemanticBlock(pre_stage_channels[0], cfg.MODEL.NUM_JOINTS)
-        self.stage3_semantic_block = SemanticBlock(pre_stage_channels[0], cfg.MODEL.NUM_JOINTS)
-        self.stage4_semantic_block = SemanticBlock(pre_stage_channels[0], cfg.MODEL.NUM_JOINTS)
+        self.stage2_semantic_block = SemanticBlock(stage2_sem_in_channels, cfg.MODEL.NUM_JOINTS)
+        self.stage3_semantic_block = SemanticBlock(stage3_sem_in_channels, cfg.MODEL.NUM_JOINTS)
+        self.stage4_semantic_block = SemanticBlock(stage4_sem_in_channels, cfg.MODEL.NUM_JOINTS)
 
         self.stage2_predict_layer = nn.Conv2d(
             in_channels=pre_stage_channels[0],
