@@ -252,9 +252,11 @@ class HighResolutionModule(nn.Module):
             y = x[0] if i == 0 else self.fuse_layers[i][0](x[0])
             for j in range(1, self.num_branches):
                 if i == j:
-                    y = y + x[j]
+                    y = torch.cat ( (y , x[j]), dim=1)
+#                    y = y + x[j]
                 else:
-                    y = y + self.fuse_layers[i][j](x[j])
+                    y = torch.cat ( (y , self.fuse_layers[i][j](x[j])), dim=1)
+#                    y = y + self.fuse_layers[i][j](x[j])
             x_fuse.append(self.relu(y))
 
         return x_fuse
