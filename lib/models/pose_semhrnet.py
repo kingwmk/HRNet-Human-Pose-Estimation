@@ -368,7 +368,7 @@ class SemanticPoseHighResolutionNet(nn.Module):
         self.stage4_semantic_block = SemanticBlock(stage4_sem_in_channels, cfg.MODEL.NUM_JOINTS)
 
         self.stage2_predict_layer = nn.Conv2d(
-            in_channels=pre_stage_channels[0],
+            in_channels=stage2_sem_in_channels,
             out_channels=cfg.MODEL.NUM_JOINTS,
             kernel_size=extra.FINAL_CONV_KERNEL,
             groups = cfg.MODEL.NUM_JOINTS,
@@ -376,7 +376,7 @@ class SemanticPoseHighResolutionNet(nn.Module):
             padding=1 if extra.FINAL_CONV_KERNEL == 3 else 0
         )
         self.stage3_predict_layer = nn.Conv2d(
-            in_channels=pre_stage_channels[0],
+            in_channels=stage3_sem_in_channels,
             out_channels=cfg.MODEL.NUM_JOINTS,
             kernel_size=extra.FINAL_CONV_KERNEL,
             groups = cfg.MODEL.NUM_JOINTS,
@@ -384,7 +384,7 @@ class SemanticPoseHighResolutionNet(nn.Module):
             padding=1 if extra.FINAL_CONV_KERNEL == 3 else 0
         )
         self.stage4_predict_layer = nn.Conv2d(
-            in_channels=pre_stage_channels[0],
+            in_channels=stage4_sem_in_channels,
             out_channels=cfg.MODEL.NUM_JOINTS,
             kernel_size=extra.FINAL_CONV_KERNEL,
             groups = cfg.MODEL.NUM_JOINTS,
