@@ -95,7 +95,7 @@ class Bottleneck(nn.Module):
 
 class HighResolutionModule(nn.Module):
     def __init__(self, num_branches, blocks, num_blocks, num_inchannels,
-                 num_channels, fuse_method, multi_scale_output=True):
+                 num_channels, fuse_method, multi_scale_output=True, last_module = False):
         super(HighResolutionModule, self).__init__()
         self._check_branches(
             num_branches, blocks, num_blocks, num_inchannels, num_channels)
@@ -105,9 +105,11 @@ class HighResolutionModule(nn.Module):
         self.num_branches = num_branches
 
         self.multi_scale_output = multi_scale_output
-
+        
         self.branches = self._make_branches(
             num_branches, blocks, num_blocks, num_channels)
+        
+        self.last_module = last_module
         self.fuse_layers = self._make_fuse_layers()
         self.relu = nn.ReLU(True)
 
@@ -178,7 +180,7 @@ class HighResolutionModule(nn.Module):
             )
 
         return nn.ModuleList(branches)
-
+    
     def _make_fuse_layers(self):
         if self.num_branches == 1:
             return None
@@ -246,21 +248,33 @@ class HighResolutionModule(nn.Module):
         for i in range(self.num_branches):
             x[i] = self.branches[i](x[i])
 
-        x_fuse = []
 
+        sem_fuse = []    
+        if self.last_module:
+            i = 0
+            y = x[0] 
+            for j in range(1, self.num_branches):
+                    if i == j:
+                        y = torch.cat ( (y , x[j]), dim=1)
+#                        y = y + x[j]
+                    else:
+                        y = torch.cat ( (y , self.fuse_layers[i][j](x[j])), dim=1)
+#                        y = y + self.fuse_layers[i][j](x[j])
+            sem_fuse.append(self.relu(y))
+        
+        x_fuse = []             
         for i in range(len(self.fuse_layers)):
             y = x[0] if i == 0 else self.fuse_layers[i][0](x[0])
             for j in range(1, self.num_branches):
                 if i == j:
-                    y = torch.cat ( (y , x[j]), dim=1)
-#                    y = y + x[j]
+#                        y = torch.cat ( (y , x[j]), dim=1)
+                    y = y + x[j]
                 else:
-                    y = torch.cat ( (y , self.fuse_layers[i][j](x[j])), dim=1)
-#                    y = y + self.fuse_layers[i][j](x[j])
+#                    y = torch.cat ( (y , self.fuse_layers[i][j](x[j])), dim=1)
+                    y = y + self.fuse_layers[i][j](x[j])
             x_fuse.append(self.relu(y))
 
-        return x_fuse
-
+        return x_fuse, sem_fuse
 
 blocks_dict = {
     'BASIC': BasicBlock,
@@ -445,8 +459,11 @@ class SemanticPoseHighResolutionNet(nn.Module):
         fuse_method = layer_config['FUSE_METHOD']
 
         modules = []
+        last_module = False
         for i in range(num_modules):
             # multi_scale_output is only used last module
+            if i == num_modules - 1:
+                last_module = True
             if not multi_scale_output and i == num_modules - 1:
                 reset_multi_scale_output = False
             else:
@@ -460,7 +477,8 @@ class SemanticPoseHighResolutionNet(nn.Module):
                     num_inchannels,
                     num_channels,
                     fuse_method,
-                    reset_multi_scale_output
+                    reset_multi_scale_output,
+                    last_module
                 )
             )
             num_inchannels = modules[-1].get_num_inchannels()
@@ -483,10 +501,12 @@ class SemanticPoseHighResolutionNet(nn.Module):
                 x_list.append(self.transition1[i](x))
             else:
                 x_list.append(x)
-        y_list = self.stage2(x_list)
+        y_list, sem_list = self.stage2(x_list)
+        print(y_list.shape)
+        print(sem_list.shape)
 
-        y_list[0] = self.stage2_semantic_block(y_list[0])
-        stage2_predict = self.stage2_predict_layer(y_list[0])        
+        sem_list = self.stage2_semantic_block(sem_list)
+        stage2_predict = self.stage2_predict_layer(sem_list)        
         
         x_list = []
         for i in range(self.stage3_cfg['NUM_BRANCHES']):
@@ -495,10 +515,10 @@ class SemanticPoseHighResolutionNet(nn.Module):
                 x_list.append(self.transition2[i](y_list[-1]))
             else:
                 x_list.append(y_list[i])
-        y_list = self.stage3(x_list)
+        y_list, sem_list = self.stage3(x_list)
         
-        y_list[0] = self.stage3_semantic_block(y_list[0])
-        stage3_predict = self.stage3_predict_layer(y_list[0])
+        sem_list = self.stage3_semantic_block(sem_list)
+        stage3_predict = self.stage3_predict_layer(sem_list)
         
         x_list = []
         for i in range(self.stage4_cfg['NUM_BRANCHES']):
@@ -507,10 +527,10 @@ class SemanticPoseHighResolutionNet(nn.Module):
                 x_list.append(self.transition3[i](y_list[-1]))
             else:
                 x_list.append(y_list[i])
-        y_list = self.stage4(x_list)
+        y_list, sem_list = self.stage4(x_list)
         
-        y_list[0] = self.stage4_semantic_block(y_list[0])
-        stage4_predict = self.stage4_predict_layer(y_list[0])
+        sem_list = self.stage4_semantic_block(sem_list)
+        stage4_predict = self.stage4_predict_layer(sem_list)
         
         return stage2_predict, stage3_predict, stage4_predict
 
