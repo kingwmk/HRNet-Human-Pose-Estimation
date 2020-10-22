@@ -506,13 +506,13 @@ class SemanticPoseHighResolutionNet(nn.Module):
                 x_list.append(self.transition1[i](x))
             else:
                 x_list.append(x)
-        y_list, sem_list = self.stage2(x_list)
+        y_list = self.stage2(x_list)
 
         print(len(y_list), len(y_list[0]),len(y_list[0][0]))
-        print(len(sem_list), len(sem_list[0]),len(sem_list[0][0]))
-
-        sem_list = self.stage2_semantic_block(sem_list[0])
+        
+        sem_list = self.stage2_semantic_block(y_list[0])
         stage2_predict = self.stage2_predict_layer(sem_list)        
+        y_list = y_list[1:]
         
         x_list = []
         for i in range(self.stage3_cfg['NUM_BRANCHES']):
@@ -521,10 +521,11 @@ class SemanticPoseHighResolutionNet(nn.Module):
                 x_list.append(self.transition2[i](y_list[-1]))
             else:
                 x_list.append(y_list[i])
-        y_list, sem_list = self.stage3(x_list)
+        y_list = self.stage3(x_list)
         
-        sem_list = self.stage3_semantic_block(sem_list[0])
+        sem_list = self.stage3_semantic_block(y_list[0])
         stage3_predict = self.stage3_predict_layer(sem_list)
+        y_list = y_list[1:]
         
         x_list = []
         for i in range(self.stage4_cfg['NUM_BRANCHES']):
@@ -533,9 +534,9 @@ class SemanticPoseHighResolutionNet(nn.Module):
                 x_list.append(self.transition3[i](y_list[-1]))
             else:
                 x_list.append(y_list[i])
-        y_list, sem_list = self.stage4(x_list)
+        y_list = self.stage4(x_list)
         
-        sem_list = self.stage4_semantic_block(sem_list[0])
+        sem_list = self.stage4_semantic_block(y_list[0])
         stage4_predict = self.stage4_predict_layer(sem_list)
         
         return stage2_predict, stage3_predict, stage4_predict
