@@ -509,9 +509,6 @@ class SemanticPoseHighResolutionNet(nn.Module):
             else:
                 x_list.append(x)
         y_list = self.stage2(x_list)
-
-        print(len(y_list), len(y_list[0]),len(y_list[0][0]), len(y_list[0][0][0]),len(y_list[0][0][0][0]))
-        print(len(y_list), len(y_list[1]),len(y_list[1][0]), len(y_list[0][0][0]),len(y_list[0][0][0][0]))
         
         sem_list = self.stage2_semantic_block(y_list[0])
         stage2_predict = self.stage2_predict_layer(sem_list)        
@@ -525,6 +522,9 @@ class SemanticPoseHighResolutionNet(nn.Module):
             else:
                 x_list.append(y_list[i])
         y_list = self.stage3(x_list)
+        
+        print(len(y_list), len(y_list[0]),len(y_list[0][0]), len(y_list[0][0][0]),len(y_list[0][0][0][0]))
+        print(len(y_list), len(y_list[1]),len(y_list[1][0]), len(y_list[0][0][0]),len(y_list[0][0][0][0]))
         
         sem_list = self.stage3_semantic_block(y_list[0])
         stage3_predict = self.stage3_predict_layer(sem_list)
