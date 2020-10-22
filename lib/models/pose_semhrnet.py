@@ -249,7 +249,7 @@ class HighResolutionModule(nn.Module):
             x[i] = self.branches[i](x[i])
 
 
-        sem_fuse = []    
+        x_fuse = []   
         if self.last_module:
             i = 0
             y = x[0] 
@@ -260,9 +260,9 @@ class HighResolutionModule(nn.Module):
                     else:
                         y = torch.cat ( (y , self.fuse_layers[i][j](x[j])), dim=1)
 #                        y = y + self.fuse_layers[i][j](x[j])
-            sem_fuse.append(self.relu(y))
+            x_fuse.append(self.relu(y))
         
-        x_fuse = []             
+           
         for i in range(len(self.fuse_layers)):
             y = x[0] if i == 0 else self.fuse_layers[i][0](x[0])
             for j in range(1, self.num_branches):
@@ -273,8 +273,7 @@ class HighResolutionModule(nn.Module):
 #                    y = torch.cat ( (y , self.fuse_layers[i][j](x[j])), dim=1)
                     y = y + self.fuse_layers[i][j](x[j])
             x_fuse.append(self.relu(y))
-        if self.last_module:
-            return x_fuse, sem_fuse
+
         return x_fuse
 
 blocks_dict = {
