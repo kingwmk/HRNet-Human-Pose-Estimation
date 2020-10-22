@@ -492,7 +492,6 @@ class SemanticPoseHighResolutionNet(nn.Module):
         return nn.Sequential(*modules), num_inchannels
 
     def forward(self, x):
-        print(x.shape)
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
@@ -500,8 +499,7 @@ class SemanticPoseHighResolutionNet(nn.Module):
         x = self.bn2(x)
         x = self.relu(x)
         x = self.layer1(x)
-        
-        print(x.shape)
+
         x_list = []
         for i in range(self.stage2_cfg['NUM_BRANCHES']):
             # if self.transition1[i] is not None:
@@ -522,10 +520,7 @@ class SemanticPoseHighResolutionNet(nn.Module):
                 x_list.append(self.transition2[i](y_list[-1]))
             else:
                 x_list.append(y_list[i])
-        y_list = self.stage3(x_list)
-        
-        print(len(y_list), len(y_list[0]),len(y_list[0][0]), len(y_list[0][0][0]),len(y_list[0][0][0][0]))
-        print(len(y_list), len(y_list[1]),len(y_list[1][0]), len(y_list[0][0][0]),len(y_list[0][0][0][0]))
+        y_list = self.stage3(x_list)      
         
         sem_list = self.stage3_semantic_block(y_list[0])
         stage3_predict = self.stage3_predict_layer(sem_list)
