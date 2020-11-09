@@ -39,7 +39,7 @@ def semantic_train(config, train_loader, model, criterion, optimizer, epoch,
         data_time.update(time.time() - end)
 
         # compute output
-        semantic_outputs1, semantic_outputs2, semantic_outputs3  = model(input)
+        semantic_outputs1, semantic_outputs2= model(input)
 
         target = target.cuda(non_blocking=True)
         target_weight = target_weight.cuda(non_blocking=True)
@@ -56,18 +56,11 @@ def semantic_train(config, train_loader, model, criterion, optimizer, epoch,
             for semantic_output in semantic_outputs2[1:]:
                 loss2 += criterion(semantic_output, target, target_weight)
         else:
-            loss2 = criterion(semantic_outputs2, target, target_weight)
-          
-        if isinstance(semantic_outputs3, list):
-            loss3 = criterion(semantic_outputs3[0], target, target_weight)
-            for semantic_output in semantic_outputs3[1:]:
-                loss3 += criterion(semantic_output, target, target_weight)
-        else:
-            loss3 = criterion(semantic_outputs3, target, target_weight)          
+            loss2 = criterion(semantic_outputs2, target, target_weight)      
           
 
         # loss = criterion(output, target, target_weight)
-        loss = loss1 + loss2 + loss3
+        loss = loss1 + loss2
         # compute gradient and do update step
         optimizer.zero_grad()
         loss.backward()
@@ -76,7 +69,7 @@ def semantic_train(config, train_loader, model, criterion, optimizer, epoch,
         # measure accuracy and record loss
         losses.update(loss.item(), input.size(0))
 
-        _, avg_acc, cnt, pred = accuracy(semantic_outputs3.detach().cpu().numpy(),
+        _, avg_acc, cnt, pred = accuracy(semantic_outputs2.detach().cpu().numpy(),
                                          target.detach().cpu().numpy())
         acc.update(avg_acc, cnt)
 
@@ -103,7 +96,7 @@ def semantic_train(config, train_loader, model, criterion, optimizer, epoch,
             writer_dict['train_global_steps'] = global_steps + 1
 
             prefix = '{}_{}'.format(os.path.join(output_dir, 'train'), i)
-            save_debug_images(config, input, meta, target, pred*4, semantic_outputs3,
+            save_debug_images(config, input, meta, target, pred*4, semantic_outputs2,
                               prefix)
 
 def semantic_validate(config, val_loader, val_dataset, model, criterion, output_dir,
@@ -129,7 +122,7 @@ def semantic_validate(config, val_loader, val_dataset, model, criterion, output_
         end = time.time()
         for i, (input, target, target_weight, meta) in enumerate(val_loader):
             # compute output
-            _, _, outputs = model(input)
+            _, outputs = model(input)
             if isinstance(outputs, list):
                 output = outputs[-1]
             else:
@@ -140,7 +133,7 @@ def semantic_validate(config, val_loader, val_dataset, model, criterion, output_
                 # input_flipped = model(input[:, :, :, ::-1])
                 input_flipped = np.flip(input.cpu().numpy(), 3).copy()
                 input_flipped = torch.from_numpy(input_flipped).cuda()
-                _, _, outputs_flipped = model(input_flipped)
+                _, outputs_flipped = model(input_flipped)
 
                 if isinstance(outputs_flipped, list):
                     output_flipped = outputs_flipped[-1]
