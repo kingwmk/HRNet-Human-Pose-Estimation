@@ -364,18 +364,18 @@ class SemanticPoseHighResolutionNet(nn.Module):
         stage4_sem_in_channels = num_channels[0]*self.stage4_cfg['NUM_BRANCHES']
 
  ### Semantic-block i
-        self.stage2_semantic_block = SemanticBlock(stage2_sem_in_channels, cfg.MODEL.NUM_JOINTS)
+#        self.stage2_semantic_block = SemanticBlock(stage2_sem_in_channels, cfg.MODEL.NUM_JOINTS)
         self.stage3_semantic_block = SemanticBlock(stage3_sem_in_channels, cfg.MODEL.NUM_JOINTS)
         self.stage4_semantic_block = SemanticBlock(stage4_sem_in_channels, cfg.MODEL.NUM_JOINTS)
 
-        self.stage2_predict_layer = nn.Conv2d(
-            in_channels=stage2_sem_in_channels,
-            out_channels=cfg.MODEL.NUM_JOINTS,
-            kernel_size=extra.FINAL_CONV_KERNEL,
-            groups = cfg.MODEL.NUM_JOINTS,
-            stride=1,
-            padding=1 if extra.FINAL_CONV_KERNEL == 3 else 0
-        )
+#        self.stage2_predict_layer = nn.Conv2d(
+#            in_channels=stage2_sem_in_channels,
+#            out_channels=cfg.MODEL.NUM_JOINTS,
+#            kernel_size=extra.FINAL_CONV_KERNEL,
+#            groups = cfg.MODEL.NUM_JOINTS,
+#            stride=1,
+#            padding=1 if extra.FINAL_CONV_KERNEL == 3 else 0
+#        )
         self.stage3_predict_layer = nn.Conv2d(
             in_channels=stage3_sem_in_channels,
             out_channels=cfg.MODEL.NUM_JOINTS,
@@ -509,8 +509,8 @@ class SemanticPoseHighResolutionNet(nn.Module):
                 x_list.append(x)
         y_list = self.stage2(x_list)
         
-        sem_list = self.stage2_semantic_block(y_list[0])
-        stage2_predict = self.stage2_predict_layer(sem_list)        
+#        sem_list = self.stage2_semantic_block(y_list[0])
+#        stage2_predict = self.stage2_predict_layer(sem_list)        
         y_list = y_list[1:]
         
         x_list = []
@@ -538,7 +538,7 @@ class SemanticPoseHighResolutionNet(nn.Module):
         sem_list = self.stage4_semantic_block(y_list[0])
         stage4_predict = self.stage4_predict_layer(sem_list)
         
-        return stage2_predict, stage3_predict, stage4_predict
+        return stage3_predict, stage4_predict
 
     def init_weights(self, pretrained=''):
         logger.info('=> init weights from normal distribution')
