@@ -207,7 +207,7 @@ class HighResolutionModule(nn.Module):
                         )
                     )
                 elif j == i:
-                    fuse_layer.append(None)
+                    fuse_layer.append(nn.Identity())
                 else:
                     conv3x3s = []
                     for k in range(i-j):
@@ -396,7 +396,7 @@ class SemanticPoseHighResolutionNet(nn.Module):
                         )
                     )
                 else:
-                    transition_layers.append(None)
+                    transition_layers.append(nn.Identity())
             else:
                 conv3x3s = []
                 for j in range(i+1-num_branches_pre):
@@ -478,7 +478,7 @@ class SemanticPoseHighResolutionNet(nn.Module):
 
         x_list = []
         for i in range(self.stage2_cfg['NUM_BRANCHES']):
-            if self.transition1[i] is not None:
+            if not isinstance(self.transition1[i], nn.Identity):
                 x_list.append(self.transition1[i](x))
             else:
                 x_list.append(x)
@@ -486,7 +486,7 @@ class SemanticPoseHighResolutionNet(nn.Module):
 
         x_list = []
         for i in range(self.stage3_cfg['NUM_BRANCHES']):
-            if self.transition2[i] is not None:
+            if not isinstance(self.transition2[i], nn.Identity):
                 x_list.append(self.transition2[i](y_list[-1]))
             else:
                 x_list.append(y_list[i])
@@ -494,7 +494,7 @@ class SemanticPoseHighResolutionNet(nn.Module):
 
         x_list = []
         for i in range(self.stage4_cfg['NUM_BRANCHES']):
-            if self.transition3[i] is not None:
+            if not isinstance(self.transition3[i], nn.Identity):
                 x_list.append(self.transition3[i](y_list[-1]))
             else:
                 x_list.append(y_list[i])
