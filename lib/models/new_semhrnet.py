@@ -499,9 +499,11 @@ class SemanticPoseHighResolutionNet(nn.Module):
             else:
                 x_list.append(y_list[i])
         y_list = self.stage4(x_list)
-        x = self.bn3(y_list[0])
+        
+        x = self.extend_layer(y_list[0]) 
+        x = self.bn3(x)
         x = self.relu(x)
-        x = self.extend_layer(x) 
+
         hrnet_predict = self.hrnet_predict_layer(x)
         
         sem_x = self.stage4_semantic_block(x)
