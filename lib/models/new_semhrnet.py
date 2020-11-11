@@ -346,7 +346,7 @@ class SemanticPoseHighResolutionNet(nn.Module):
         self.stage4, pre_stage_channels = self._make_stage(
             self.stage4_cfg, num_channels, multi_scale_output=False)
         
-        extend_channels = pre_stage_channels[0]*2
+        extend_channels = cfg.MODEL.NUM_JOINTS*4
         self.extend_layer = nn.Conv2d(
             in_channels=pre_stage_channels[0],
             out_channels=extend_channels,
