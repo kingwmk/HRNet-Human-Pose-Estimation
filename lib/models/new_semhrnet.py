@@ -289,13 +289,13 @@ class SemanticBlock(nn.Module):
                  padding=1, dilation=1, groups= num_joints)
         
     def forward(self, x):
-        residual = x
+#        residual = x
         x = self.conv_1(x)
         x = self.bn1(x)
         x = self.relu(x)
         x = self.conv_2(x)
         x = self.bn2(x)
-        x += residual
+#        x += residual
         x = self.relu(x)
         return x
 
