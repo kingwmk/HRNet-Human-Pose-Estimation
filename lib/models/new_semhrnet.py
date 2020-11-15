@@ -367,6 +367,7 @@ class SemanticPoseHighResolutionNet(nn.Module):
             stride=1,
             padding=1 if extra.FINAL_CONV_KERNEL == 3 else 0
         )
+        extend_channels = extend_channels*2
         self.stage4_predict_layer = nn.Conv2d(
             in_channels=extend_channels,
             out_channels=cfg.MODEL.NUM_JOINTS,
@@ -509,10 +510,16 @@ class SemanticPoseHighResolutionNet(nn.Module):
 
         hrnet_predict = self.hrnet_predict_layer(x)
         
-        sem_x = self.stage4_semantic_block_1(x)
-        sem_x = self.stage4_semantic_block_2(sem_x)
-        stage4_predict = self.stage4_predict_layer(sem_x)
+        sem_1 = self.stage4_semantic_block_1(x)
+        sem_2 = self.stage4_semantic_block_2(x)
+
+        # Permutation : channels come from each branches in turn
+        sem = torch.cat ( (sem_1, sem_2), dim=1)
+        b, c, h, w = sem.size()
+        branches = 2
+        sem_x = sem.view(b, branches, c // branches, h, w).permute(0, 2, 1, 3, 4).contiguous().view(b, c, h, w)
         
+        stage4_predict = self.stage4_predict_layer(sem_x)
         return hrnet_predict, stage4_predict
 
     def init_weights(self, pretrained=''):
