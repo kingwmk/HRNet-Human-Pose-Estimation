@@ -357,6 +357,7 @@ class SemanticPoseHighResolutionNet(nn.Module):
             padding=1 if extra.FINAL_CONV_KERNEL == 3 else 0
         )
         self.bn3 = nn.BatchNorm2d(extend_channels, momentum=BN_MOMENTUM)
+        self.bn4 = nn.BatchNorm2d(extend_channels, momentum=BN_MOMENTUM)
         self.stage4_semantic_block_1 = SemanticBlock(extend_channels, cfg.MODEL.NUM_JOINTS)
 #        self.stage4_semantic_block_2 = SemanticBlock(extend_channels, cfg.MODEL.NUM_JOINTS)
         self.hrnet_predict_layer = nn.Conv2d(
@@ -503,9 +504,12 @@ class SemanticPoseHighResolutionNet(nn.Module):
             else:
                 x_list.append(y_list[i])
         y_list = self.stage4(x_list)
+        
         x = self.bn3(y_list[0])
         x = self.relu(x)
         x = self.extend_layer(x) 
+        x = self.bn4(x)
+        x = self.relu(x)
         hrnet_predict = self.hrnet_predict_layer(x)
         
         sem_1 = self.stage4_semantic_block_1(x)
