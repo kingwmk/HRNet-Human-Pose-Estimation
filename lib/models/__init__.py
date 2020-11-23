@@ -17,3 +17,4 @@ import models.pose_hrnet
 import models.new_semhrnet
 import models.new2_semhrnet
 import models.pose_semnet
+import models.semconvhrnet
