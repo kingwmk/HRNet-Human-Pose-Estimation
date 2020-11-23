@@ -358,7 +358,11 @@ class SemanticPoseHighResolutionNet(nn.Module):
         )
         self.bn3 = nn.BatchNorm2d(pre_stage_channels[0], momentum=BN_MOMENTUM)
         self.bn4 = nn.BatchNorm2d(extend_channels, momentum=BN_MOMENTUM)
-        self.stage4_semantic_block_1 = SemanticBlock(extend_channels, cfg.MODEL.NUM_JOINTS)
+        self.conv_1 = conv3x3(extend_channels,extend_channels)
+        self.conv_2 = conv3x3(extend_channels,extend_channels)    
+        self.bn_1 = nn.BatchNorm2d(extend_channels, momentum=BN_MOMENTUM)
+        self.bn_2 = nn.BatchNorm2d(extend_channels, momentum=BN_MOMENTUM)
+#        self.stage4_semantic_block_1 = SemanticBlock(extend_channels, cfg.MODEL.NUM_JOINTS)
 #        self.stage4_semantic_block_2 = SemanticBlock(extend_channels, cfg.MODEL.NUM_JOINTS)
         self.hrnet_predict_layer = nn.Conv2d(
             in_channels=extend_channels,
@@ -511,9 +515,14 @@ class SemanticPoseHighResolutionNet(nn.Module):
         x = self.bn4(x)
         x = self.relu(x)
         hrnet_predict = self.hrnet_predict_layer(x)
-        
-        sem_1 = self.stage4_semantic_block_1(x)
- #       sem_2 = self.stage4_semantic_block_2(x)
+        x = self.conv_1(x)
+        x = self.bn_1(x)
+        x = self.relu(x)
+        x = self.conv_2(x)
+        x = self.bn_2(x)
+        x = self.relu(x)
+#        sem_1 = self.stage4_semantic_block_1(x)
+#       sem_2 = self.stage4_semantic_block_2(x)
 
         # Permutation : channels come from each branches in turn
 #        sem = torch.cat ( (sem_1, sem_2), dim=1)
@@ -521,7 +530,7 @@ class SemanticPoseHighResolutionNet(nn.Module):
 #        branches = 2
 #        sem_x = sem.view(b, branches, c // branches, h, w).permute(0, 2, 1, 3, 4).contiguous().view(b, c, h, w)
         
-        stage4_predict = self.stage4_predict_layer(sem_1)
+        stage4_predict = self.stage4_predict_layer(x)
         return hrnet_predict, stage4_predict
 
     def init_weights(self, pretrained=''):
