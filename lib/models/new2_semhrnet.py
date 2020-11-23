@@ -14,7 +14,7 @@ import logging
 import torch
 import torch.nn as nn
 
-
+from models.layers import SemanticMultiGroupConv
 BN_MOMENTUM = 0.1
 logger = logging.getLogger(__name__)
 
@@ -207,7 +207,7 @@ class HighResolutionModule(nn.Module):
                         )
                     )
                 elif j == i:
-                    fuse_layer.append(None)
+                    fuse_layer.append(nn.Identity())
                 else:
                     conv3x3s = []
                     for k in range(i-j):
@@ -270,14 +270,42 @@ blocks_dict = {
     'BOTTLENECK': Bottleneck
 }
 
+class SemanticBlock(nn.Module):
+    def __init__(self, in_channels, num_joints):
+        super(SemanticBlock, self).__init__()
+            
+        ### 3x3 group conv: in_channels --> in_channels
+        self.conv_1 = nn.Conv2d(in_channels, in_channels,padding=1, bias=False,
+                           kernel_size=3, groups=num_joints)
+        
+        self.bn1 = nn.BatchNorm2d(in_channels, momentum=BN_MOMENTUM)
+        self.bn2 = nn.BatchNorm2d(in_channels, momentum=BN_MOMENTUM)
+        
+        self.relu = nn.ReLU(inplace=True)
+            
+        ### 3x3 Semantic conv: in_channels --> in_channels
+        self.conv_2 = SemanticMultiGroupConv(
+                in_channels, in_channels,kernel_size=3, stride=1,
+                 padding=1, dilation=1, groups= num_joints)
+        
+    def forward(self, x):
+        residual = x
+        x = self.conv_1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        x = self.conv_2(x)
+        x = self.bn2(x)
+        x += residual
+        x = self.relu(x)
+        return x
 
-class SemanticnNet(nn.Module):
+class SemanticPoseHighResolutionNet(nn.Module):
 
     def __init__(self, cfg, **kwargs):
         self.inplanes = 64
         extra = cfg.MODEL.EXTRA
-        super(SemanticnNet, self).__init__()
-
+        super(SemanticPoseHighResolutionNet, self).__init__()
+        
         # stem net
         self.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=2, padding=1,
                                bias=False)
@@ -319,11 +347,35 @@ class SemanticnNet(nn.Module):
             pre_stage_channels, num_channels)
         self.stage4, pre_stage_channels = self._make_stage(
             self.stage4_cfg, num_channels, multi_scale_output=False)
-
-        self.final_layer = nn.Conv2d(
+        
+        extend_channels = cfg.MODEL.NUM_JOINTS*4
+        self.extend_layer = nn.Conv2d(
             in_channels=pre_stage_channels[0],
+            out_channels=extend_channels,
+            kernel_size=extra.FINAL_CONV_KERNEL,
+            stride=1,
+            padding=1 if extra.FINAL_CONV_KERNEL == 3 else 0
+        )
+        self.bn3 = nn.BatchNorm2d(pre_stage_channels[0], momentum=BN_MOMENTUM)
+        self.bn4 = nn.BatchNorm2d(extend_channels, momentum=BN_MOMENTUM)
+        self.stage4_semantic_block_1 = SemanticBlock(extend_channels, cfg.MODEL.NUM_JOINTS)
+        self.stage4_semantic_block_2 = SemanticBlock(extend_channels, cfg.MODEL.NUM_JOINTS)
+        self.stage4_semantic_block_3 = SemanticBlock(extend_channels, cfg.MODEL.NUM_JOINTS)
+        self.stage4_semantic_block_4 = SemanticBlock(extend_channels, cfg.MODEL.NUM_JOINTS)
+        self.hrnet_predict_layer = nn.Conv2d(
+            in_channels=extend_channels,
             out_channels=cfg.MODEL.NUM_JOINTS,
             kernel_size=extra.FINAL_CONV_KERNEL,
+            groups = cfg.MODEL.NUM_JOINTS,
+            stride=1,
+            padding=1 if extra.FINAL_CONV_KERNEL == 3 else 0
+        )
+#        extend_channels = extend_channels*2
+        self.stage4_predict_layer = nn.Conv2d(
+            in_channels=extend_channels,
+            out_channels=cfg.MODEL.NUM_JOINTS,
+            kernel_size=extra.FINAL_CONV_KERNEL,
+            groups = cfg.MODEL.NUM_JOINTS,
             stride=1,
             padding=1 if extra.FINAL_CONV_KERNEL == 3 else 0
         )
@@ -351,7 +403,7 @@ class SemanticnNet(nn.Module):
                         )
                     )
                 else:
-                    transition_layers.append(None)
+                    transition_layers.append(nn.Identity())
             else:
                 conv3x3s = []
                 for j in range(i+1-num_branches_pre):
@@ -433,7 +485,7 @@ class SemanticnNet(nn.Module):
 
         x_list = []
         for i in range(self.stage2_cfg['NUM_BRANCHES']):
-            if self.transition1[i] is not None:
+            if not isinstance(self.transition1[i], nn.Identity):
                 x_list.append(self.transition1[i](x))
             else:
                 x_list.append(x)
@@ -441,7 +493,7 @@ class SemanticnNet(nn.Module):
 
         x_list = []
         for i in range(self.stage3_cfg['NUM_BRANCHES']):
-            if self.transition2[i] is not None:
+            if not isinstance(self.transition2[i], nn.Identity):
                 x_list.append(self.transition2[i](y_list[-1]))
             else:
                 x_list.append(y_list[i])
@@ -449,15 +501,32 @@ class SemanticnNet(nn.Module):
 
         x_list = []
         for i in range(self.stage4_cfg['NUM_BRANCHES']):
-            if self.transition3[i] is not None:
+            if not isinstance(self.transition3[i], nn.Identity):
                 x_list.append(self.transition3[i](y_list[-1]))
             else:
                 x_list.append(y_list[i])
         y_list = self.stage4(x_list)
-
-        x = self.final_layer(y_list[0])
-
-        return x
+        
+        x = self.bn3(y_list[0])
+        x = self.relu(x)
+        x = self.extend_layer(x) 
+        x = self.bn4(x)
+        x = self.relu(x)
+        hrnet_predict = self.hrnet_predict_layer(x)
+        
+        sem_1 = self.stage4_semantic_block_1(x)
+        sem_2 = self.stage4_semantic_block_2(x)
+        sem_3 = self.stage4_semantic_block_3(x)
+        sem_4 = self.stage4_semantic_block_4(x)
+        sem_x = sem_1 + sem_2 + sem_3 + sem_4
+        # Permutation : channels come from each branches in turn
+#        sem = torch.cat ( (sem_1, sem_2), dim=1)
+#        b, c, h, w = sem.size()
+#        branches = 2
+#        sem_x = sem.view(b, branches, c // branches, h, w).permute(0, 2, 1, 3, 4).contiguous().view(b, c, h, w)
+        
+        stage4_predict = self.stage4_predict_layer(sem_x)
+        return hrnet_predict, stage4_predict
 
     def init_weights(self, pretrained=''):
         logger.info('=> init weights from normal distribution')
@@ -491,9 +560,8 @@ class SemanticnNet(nn.Module):
             logger.error('=> please download pre-trained models first!')
             raise ValueError('{} is not exist!'.format(pretrained))
 
-
 def get_pose_net(cfg, is_train, **kwargs):
-    model = SemanticnNet(cfg, **kwargs)
+    model = SemanticPoseHighResolutionNet(cfg, **kwargs)
 
     if is_train and cfg.MODEL.INIT_WEIGHTS:
         model.init_weights(cfg.MODEL.PRETRAINED)
