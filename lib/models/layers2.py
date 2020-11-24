@@ -55,7 +55,7 @@ class SemanticMultiGroupConv(nn.Module):
         for i in range(self.groups):           
             each_x = self.gconv1[i](x)
             b, c, h, w = each_x.size() 
-#            print(each_x.size())
+            print(each_x.shape)
             each_x = self.norm[i](each_x)
             each_x = self.relu(each_x)
         
