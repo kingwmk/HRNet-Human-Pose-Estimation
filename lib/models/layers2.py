@@ -40,7 +40,7 @@ class SemanticMultiGroupConv(nn.Module):
             self.gconv1.append(nn.Sequential(nn.Conv2d(in_channels, out_channels, kernel_size, stride, 
                     padding, dilation, groups, bias=False)))
             self.norm.append(nn.Sequential(nn.BatchNorm2d(in_channels)))
-            self.gconv2.append(nn.Sequential(nn.Conv2d(out_channels, aff_out_channels, kernel_size = 1, stride, 
+            self.gconv2.append(nn.Sequential(nn.Conv2d(out_channels, aff_out_channels, 1, stride, 
                     padding, dilation, groups, bias=False)))
             self.norm2.append(nn.Sequential(nn.BatchNorm2d(aff_out_channels)))
         
