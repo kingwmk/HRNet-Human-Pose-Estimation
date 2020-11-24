@@ -290,7 +290,6 @@ class SemanticBlock(nn.Module):
         
     def forward(self, x):
         residual = x
-        print(x.shape)
         x = self.conv_1(x)
         x = self.bn1(x)
         x = self.relu(x)
