@@ -37,12 +37,12 @@ class SemanticMultiGroupConv(nn.Module):
         self.gconv2 = []
         self.norm2 = []
         for i in range(groups):
-            self.gconv1[i] = nn.Conv2d(in_channels, out_channels, kernel_size, stride, 
-                    padding, dilation, groups, bias=False)
-            self.norm[i] = nn.BatchNorm2d(in_channels)
-            self.gconv2[i] = nn.Conv2d(out_channels, aff_out_channels, kernel_size, stride, 
-                    padding, dilation, groups, bias=False)
-            self.norm2[i] = nn.BatchNorm2d(aff_out_channels)
+            self.gconv1.append(nn.Conv2d(in_channels, out_channels, kernel_size, stride, 
+                    padding, dilation, groups, bias=False))
+            self.norm.append(nn.BatchNorm2d(in_channels))
+            self.gconv2.append(nn.Conv2d(out_channels, aff_out_channels, kernel_size, stride, 
+                    padding, dilation, groups, bias=False))
+            self.norm2.append( nn.BatchNorm2d(aff_out_channels))
         
 
     def forward(self, x):
