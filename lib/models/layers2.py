@@ -50,14 +50,15 @@ class SemanticMultiGroupConv(nn.Module):
         The code here is just a coarse implementation.
         The forward process can be quite slow and memory consuming, need to be optimized.
         """
+
         result_x = None
         for i in range(self.groups):           
-            x = self.gconv1[i](x)
-            b, c, h, w = x.size() 
-            x = self.norm[i](x)
-            x = self.relu(x)
+            each_x = self.gconv1[i](x)
+            b, c, h, w = each_x.size() 
+            each_x = self.norm[i](each_x)
+            each_x = self.relu(each_x)
         
-            aff_x = self.gconv2[i](x)
+            aff_x = self.gconv2[i](each_x)
             aff_x = self.norm2[i](aff_x)
             aff_x = self.relu(aff_x)
             x_averaged = self.avg_pool(aff_x)
@@ -78,11 +79,11 @@ class SemanticMultiGroupConv(nn.Module):
             aff = torch.matmul(theta_x, phi_x)
             print(aff.shape)
             aff = aff[:,i]
-#            print(aff.shape)
+            print(aff.shape)
             N = aff.size(-1)
             aff_div_C = aff / N
         
-            x = x.view(b, self.groups, -1)
+            each_x= each_x.view(b, self.groups, -1)
             z = torch.matmul(aff_div_C, x)
             z = z.view(b, -1, h, w)
             if result_x == None :
