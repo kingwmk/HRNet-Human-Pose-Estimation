@@ -37,12 +37,12 @@ class SemanticMultiGroupConv(nn.Module):
         self.gconv2 = []
         self.norm2 = []
         for i in range(groups):
-            self.gconv1.append(nn.Conv2d(in_channels, out_channels, kernel_size, stride, 
-                    padding, dilation, groups, bias=False))
-            self.norm.append(nn.BatchNorm2d(in_channels))
-            self.gconv2.append(nn.Conv2d(out_channels, aff_out_channels, kernel_size, stride, 
-                    padding, dilation, groups, bias=False))
-            self.norm2.append( nn.BatchNorm2d(aff_out_channels))
+            self.gconv1.append(nn.Sequential(nn.Conv2d(in_channels, out_channels, kernel_size, stride, 
+                    padding, dilation, groups, bias=False)))
+            self.norm.append(nn.Sequential(nn.BatchNorm2d(in_channels)))
+            self.gconv2.append(nn.Sequential(nn.Conv2d(out_channels, aff_out_channels, kernel_size, stride, 
+                    padding, dilation, groups, bias=False)))
+            self.norm2.append(nn.Sequential(nn.BatchNorm2d(aff_out_channels)))
         
 
     def forward(self, x):
@@ -77,7 +77,7 @@ class SemanticMultiGroupConv(nn.Module):
             aff = torch.matmul(theta_x, phi_x)
             print(aff.shape)
             aff = aff[i]
-            print(aff.shape)
+#            print(aff.shape)
             N = aff.size(-1)
             aff_div_C = aff / N
         
@@ -85,5 +85,5 @@ class SemanticMultiGroupConv(nn.Module):
             z = torch.matmul(aff_div_C, x)
             z = z.view(b, -1, h, w)
             result_x = torch.cat ( (result_x, z), dim=1)
-        print(result_x.shape)
+#        print(result_x.shape)
         return result_x
