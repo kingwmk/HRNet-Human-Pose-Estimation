@@ -86,6 +86,7 @@ class SemanticMultiGroupConv(nn.Module):
             print(aff_div_C.shape)
             print(each_x.shape)
             z = torch.matmul(aff_div_C, each_x)
+            z = z[:,i]
             print(z.shape)
             z = z.view(b, -1, h, w)
             print(z.shape)
