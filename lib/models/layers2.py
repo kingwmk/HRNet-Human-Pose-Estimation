@@ -90,5 +90,5 @@ class SemanticMultiGroupConv(nn.Module):
                 result_x = z
             else:
                 result_x = torch.cat ( (result_x, z), dim=1)
-#        print(result_x.shape)
+        print(result_x.shape)
         return result_x
