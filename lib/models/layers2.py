@@ -61,6 +61,7 @@ class SemanticMultiGroupConv(nn.Module):
             aff_x = self.norm2[i](aff_x)
             aff_x = self.relu(aff_x)
             x_averaged = self.avg_pool(aff_x)
+            print(x_averaged.shape)
         
 #        theta_x = self.theta(x).view(batch_size, self.inter_channels, -1)
 #        theta_x = theta_x.permute(0, 2, 1)
@@ -77,7 +78,7 @@ class SemanticMultiGroupConv(nn.Module):
             aff = torch.matmul(theta_x, phi_x)
             print(aff.shape)
             aff = aff[i]
-            print(aff.shape)
+#            print(aff.shape)
             N = aff.size(-1)
             aff_div_C = aff / N
         
