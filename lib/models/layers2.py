@@ -77,7 +77,7 @@ class SemanticMultiGroupConv(nn.Module):
 
             aff = torch.matmul(theta_x, phi_x)
             print(aff.shape)
-            aff = aff[i]
+            aff = aff[:,i]
 #            print(aff.shape)
             N = aff.size(-1)
             aff_div_C = aff / N
