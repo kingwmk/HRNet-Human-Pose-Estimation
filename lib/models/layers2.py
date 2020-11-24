@@ -28,7 +28,7 @@ class SemanticMultiGroupConv(nn.Module):
                 "head number can not be divided by input channels"
         assert self.out_channels % self.groups == 0, \
                 "head number can not be divided by output channels"
-        self.grid = 25
+        self.grid = 16
         aff_out_channels = self.grid * out_channels
 
         
@@ -83,16 +83,11 @@ class SemanticMultiGroupConv(nn.Module):
             aff_div_C = aff / N
         
             each_x= each_x.view(b, self.groups, -1)
-            print(aff_div_C.shape)
-            print(each_x.shape)
             z = torch.matmul(aff_div_C, each_x)
             z = z[:,i]
-            print(z.shape)
             z = z.view(b, -1, h, w)
-            print(z.shape)
             if result_x == None :
                 result_x = z
             else:
                 result_x = torch.cat ( (result_x, z), dim=1)
-        print(result_x.shape)
         return result_x
