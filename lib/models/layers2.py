@@ -50,7 +50,7 @@ class SemanticMultiGroupConv(nn.Module):
         The code here is just a coarse implementation.
         The forward process can be quite slow and memory consuming, need to be optimized.
         """
-        result_x = []
+        result_x = torch.Tensor()
         for i in range(self.groups):           
             x = self.gconv1[i](x)
             b, c, h, w = x.size() 
