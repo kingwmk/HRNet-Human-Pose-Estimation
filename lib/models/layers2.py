@@ -50,6 +50,7 @@ class SemanticMultiGroupConv(nn.Module):
         The code here is just a coarse implementation.
         The forward process can be quite slow and memory consuming, need to be optimized.
         """
+        result_x = None
         for i in range(self.groups):           
             x = self.gconv1[i](x)
             b, c, h, w = x.size() 
@@ -76,13 +77,16 @@ class SemanticMultiGroupConv(nn.Module):
             aff = torch.matmul(theta_x, phi_x)
             print(aff.shape)
             aff = aff[i]
-#            print(aff.shape)
+            print(aff.shape)
             N = aff.size(-1)
             aff_div_C = aff / N
         
             x = x.view(b, self.groups, -1)
             z = torch.matmul(aff_div_C, x)
             z = z.view(b, -1, h, w)
-            result_x = torch.cat ( (result_x, z), dim=1)
+            if result_x == None :
+                result_x = z
+            else:
+                result_x = torch.cat ( (result_x, z), dim=1)
 #        print(result_x.shape)
         return result_x
