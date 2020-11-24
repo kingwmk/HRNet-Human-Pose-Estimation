@@ -82,13 +82,14 @@ class SemanticMultiGroupConv(nn.Module):
             aff = torch.matmul(theta_x, phi_x)
 #            print(aff.shape)
             aff = aff[:,i]
-#            print(aff.shape)
+            print(aff.shape)
             N = aff.size(-1)
             aff_div_C = aff / N
         
             each_x= each_x.view(b, self.groups, -1)
             z = torch.matmul(aff_div_C, each_x)
             z = z.view(b, -1, h, w)
+            print(z.shape)
             if result_x == None :
                 result_x = z
             else:
