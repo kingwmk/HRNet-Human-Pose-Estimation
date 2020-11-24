@@ -50,7 +50,7 @@ class SemanticMultiGroupConv(nn.Module):
         The code here is just a coarse implementation.
         The forward process can be quite slow and memory consuming, need to be optimized.
         """
-
+        print(x.shape)
         result_x = None
         for i in range(self.groups):           
             each_x = self.gconv1[i](x)
