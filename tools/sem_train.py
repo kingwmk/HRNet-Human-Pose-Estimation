@@ -30,6 +30,8 @@ from utils.utils import get_model_summary
 import dataset
 import models
 
+import random
+random.seed(64)
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train keypoints network')
