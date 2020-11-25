@@ -10,7 +10,7 @@ import torch.nn.functional as F
 class SemanticMultiGroupConv(nn.Module):
     global_progress = 0.0
     def __init__(self, in_channels, out_channels, kernel_size=3, stride=1,
-                 padding=1, dilation=0, groups=16):
+                 padding=1, dilation=1 ,groups=16):
         super(SemanticMultiGroupConv, self).__init__()
         self.norm = nn.BatchNorm2d(in_channels)
         self.relu = nn.ReLU(inplace=True)
@@ -20,7 +20,7 @@ class SemanticMultiGroupConv(nn.Module):
         self.groups = groups
         self.stride = stride 
         self.padding = padding 
-        self.dilation = dilation
+
 
 
         ### Check if arguments are valid
