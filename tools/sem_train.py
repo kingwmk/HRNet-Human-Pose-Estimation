@@ -30,9 +30,6 @@ from utils.utils import get_model_summary
 import dataset
 import models
 
-import random
-random.seed(64)
-
 def parse_args():
     parser = argparse.ArgumentParser(description='Train keypoints network')
     # general
@@ -70,6 +67,7 @@ def parse_args():
 
 
 def main():
+    torch.manual_seed(317)
     args = parse_args()
     start_time = str(datetime.datetime.now())
     update_config(cfg, args)
