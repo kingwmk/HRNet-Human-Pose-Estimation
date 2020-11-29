@@ -67,7 +67,8 @@ def parse_args():
 
 
 def main():
-    torch.manual_seed(317)
+#    torch.manual_seed(317)
+    torch.manual_seed(42)
     args = parse_args()
     start_time = str(datetime.datetime.now())
     update_config(cfg, args)
