@@ -101,8 +101,8 @@ class SemanticMultiGroupConv(nn.Module):
                 result_x = z
             else :
                 result_x = result_x + z 
-        result_x = self.norm(result_x)
-        result_x = self.relu(result_x)
+#        result_x = self.norm(result_x)
+#        result_x = self.relu(result_x)
         return result_x
     
 def conv3x3(in_planes, out_planes, stride=1):
