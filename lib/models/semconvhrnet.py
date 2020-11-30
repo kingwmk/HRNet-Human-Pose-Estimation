@@ -63,7 +63,7 @@ class SemanticMultiGroupConv(nn.Module):
         The forward process can be quite slow and memory consuming, need to be optimized.
         """
 
-#        result_x = None
+        result_x = None
         for i in range(self.groups): 
             each_x = self.gconv1[i](x)
             b, c, h, w = each_x.size() 
