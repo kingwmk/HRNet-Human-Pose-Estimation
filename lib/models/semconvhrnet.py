@@ -33,7 +33,7 @@ class SemanticMultiGroupConv(nn.Module):
         self.stride = stride 
         self.padding = padding 
         self.dilation = dilation
-
+        self.norm = nn.BatchNorm2d(out_channels, momentum=BN_MOMENTUM)
 
         ### Check if arguments are valid
         assert self.in_channels % self.groups == 0, \
@@ -63,7 +63,7 @@ class SemanticMultiGroupConv(nn.Module):
         The forward process can be quite slow and memory consuming, need to be optimized.
         """
 
-        result_x = None
+#        result_x = None
         for i in range(self.groups): 
             each_x = self.gconv1[i](x)
             b, c, h, w = each_x.size() 
@@ -96,12 +96,11 @@ class SemanticMultiGroupConv(nn.Module):
         
             each_x= each_x.view(b, self.groups, -1)
             z = torch.matmul(aff_div_C, each_x)
-            z = z[:,i]
-            z = z.view(b, -1, h, w)
-            if result_x == None :
-                result_x = z
-            else:
-                result_x = torch.cat ( (result_x, z), dim=1)
+            z = z.view(b, c, h, w)
+            
+            result_x = result_x + z 
+        result_x = self.norm(result_x)
+        result_x = self.relu(result_x)
         return result_x
     
 def conv3x3(in_planes, out_planes, stride=1):
