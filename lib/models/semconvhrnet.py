@@ -33,7 +33,7 @@ class SemanticMultiGroupConv(nn.Module):
         self.stride = stride 
         self.padding = padding 
         self.dilation = dilation
-        self.norm = nn.BatchNorm2d(out_channels)
+        self.norm_out = nn.BatchNorm2d(out_channels)
 
         ### Check if arguments are valid
         assert self.in_channels % self.groups == 0, \
@@ -101,8 +101,8 @@ class SemanticMultiGroupConv(nn.Module):
                 result_x = z
             else :
                 result_x = result_x + z 
-#        result_x = self.norm(result_x)
-#        result_x = self.relu(result_x)
+        result_x = self.norm_out(result_x)
+        result_x = self.relu(result_x)
         return result_x
     
 def conv3x3(in_planes, out_planes, stride=1):
