@@ -97,8 +97,10 @@ class SemanticMultiGroupConv(nn.Module):
             each_x= each_x.view(b, self.groups, -1)
             z = torch.matmul(aff_div_C, each_x)
             z = z.view(b, c, h, w)
-            
-            result_x = result_x + z 
+            if result_x == None:
+                result_x = z
+            else :
+                result_x = result_x + z 
         result_x = self.norm(result_x)
         result_x = self.relu(result_x)
         return result_x
