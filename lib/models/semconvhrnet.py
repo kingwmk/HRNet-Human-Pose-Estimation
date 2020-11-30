@@ -33,7 +33,7 @@ class SemanticMultiGroupConv(nn.Module):
         self.stride = stride 
         self.padding = padding 
         self.dilation = dilation
-        self.norm = nn.BatchNorm2d(out_channels, momentum=BN_MOMENTUM)
+        self.norm = nn.BatchNorm2d(out_channels)
 
         ### Check if arguments are valid
         assert self.in_channels % self.groups == 0, \
