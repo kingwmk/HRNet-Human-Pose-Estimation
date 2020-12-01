@@ -18,5 +18,6 @@ import models.new_semhrnet
 import models.new2_semhrnet
 import models.pose_semnet
 import models.semconvhrnet
+import models.semconvhrnet_cat
 import models.base_semhrnet
 import models.base_semhrnet2
