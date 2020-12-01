@@ -186,11 +186,12 @@ class Bottleneck(nn.Module):
 
 class HighResolutionModule(nn.Module):
     def __init__(self, num_branches, blocks, num_blocks, num_inchannels,
-                 num_channels, fuse_method, multi_scale_output=True):
+                 num_channels, fuse_method, multi_scale_output=True, last_stage=False, last_module = False):
         super(HighResolutionModule, self).__init__()
         self._check_branches(
             num_branches, blocks, num_blocks, num_inchannels, num_channels)
-
+        self.last_module = last_module
+        self.last_stage = last_stage
         self.num_inchannels = num_inchannels
         self.fuse_method = fuse_method
         self.num_branches = num_branches
@@ -336,6 +337,17 @@ class HighResolutionModule(nn.Module):
 
         for i in range(self.num_branches):
             x[i] = self.branches[i](x[i])
+            
+        if self.last_module and self.last_stage:
+            i = 0
+            y = x[0] 
+            for j in range(1, self.num_branches):
+                y = torch.cat ( (y , self.fuse_layers[i][j](x[j])), dim=1)
+# Permutation : channels come from each branches in turn
+#            b, c, h, w = y.size()
+#            branches = self.num_branches
+#            y = y.view(b, branches, c // branches, h, w).permute(0, 2, 1, 3, 4).contiguous().view(b, c, h, w)
+            return self.relu(y)
 
         x_fuse = []
 
@@ -432,11 +444,11 @@ class SemanticPoseHighResolutionNet(nn.Module):
         self.transition3 = self._make_transition_layer(
             pre_stage_channels, num_channels)
         self.stage4, pre_stage_channels = self._make_stage(
-            self.stage4_cfg, num_channels, multi_scale_output=False)
+            self.stage4_cfg, num_channels, multi_scale_output=False,last_stage = True)
         
         extend_channels = cfg.MODEL.NUM_JOINTS*4
         self.extend_layer = nn.Conv2d(
-            in_channels=pre_stage_channels[0],
+            in_channels=pre_stage_channels[0]*4,
             out_channels=extend_channels,
             kernel_size=extra.FINAL_CONV_KERNEL,
             stride=1,
@@ -527,7 +539,7 @@ class SemanticPoseHighResolutionNet(nn.Module):
         return nn.Sequential(*layers)
 
     def _make_stage(self, layer_config, num_inchannels,
-                    multi_scale_output=True):
+                    multi_scale_output=True, last_stage = False):
         num_modules = layer_config['NUM_MODULES']
         num_branches = layer_config['NUM_BRANCHES']
         num_blocks = layer_config['NUM_BLOCKS']
@@ -536,7 +548,10 @@ class SemanticPoseHighResolutionNet(nn.Module):
         fuse_method = layer_config['FUSE_METHOD']
 
         modules = []
+        last_module = False
         for i in range(num_modules):
+            if i == num_modules - 1:
+                last_module = True
             # multi_scale_output is only used last module
             if not multi_scale_output and i == num_modules - 1:
                 reset_multi_scale_output = False
@@ -551,7 +566,9 @@ class SemanticPoseHighResolutionNet(nn.Module):
                     num_inchannels,
                     num_channels,
                     fuse_method,
-                    reset_multi_scale_output
+                    reset_multi_scale_output,
+                    last_stage,
+                    last_module
                 )
             )
             num_inchannels = modules[-1].get_num_inchannels()
