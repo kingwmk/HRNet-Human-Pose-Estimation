@@ -439,7 +439,6 @@ class PoseHighResolutionNet(nn.Module):
             else:
                 x_list.append(x)
         y_list = self.stage2(x_list)
-        print(len(y_list),len(y_list[0]),len(y_list[0][0]))
         x_list = []
         for i in range(self.stage3_cfg['NUM_BRANCHES']):
             # if self.transition2[i] is not None:
