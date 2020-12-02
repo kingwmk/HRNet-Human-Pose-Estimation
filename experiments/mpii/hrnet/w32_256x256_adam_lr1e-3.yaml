@@ -1,4 +1,4 @@
-AUTO_RESUME: true
+AUTO_RESUME: false
 CUDNN:
   BENCHMARK: true
   DETERMINISTIC: false
