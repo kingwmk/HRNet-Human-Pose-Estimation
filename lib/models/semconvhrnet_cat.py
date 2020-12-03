@@ -344,9 +344,9 @@ class HighResolutionModule(nn.Module):
             for j in range(1, self.num_branches):
                 y = torch.cat ( (y , self.fuse_layers[i][j](x[j])), dim=1)
 # Permutation : channels come from each branches in turn
-#            b, c, h, w = y.size()
-#            branches = self.num_branches
-#            y = y.view(b, branches, c // branches, h, w).permute(0, 2, 1, 3, 4).contiguous().view(b, c, h, w)
+            b, c, h, w = y.size()
+            branches = self.num_branches
+            y = y.view(b, branches, c // branches, h, w).permute(0, 2, 1, 3, 4).contiguous().view(b, c, h, w)
             return self.relu(y)
 
         x_fuse = []
