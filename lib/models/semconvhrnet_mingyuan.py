@@ -72,11 +72,11 @@ class SemanticMultiGroupConv(nn.Module):
         N = aff.size(-1)
         aff_div_C = aff / N
         
-        each_x = []
+
         result_x = None
         for i in range(self.groups): 
             xi = self.gconv1[i](x)
-            each_x.append(self.norm[i](xi))
+            each_x = self.norm[i](xi)
             each_x = each_x.view(b, self.groups, -1)
             z = torch.matmul(aff_div_C[:,i], each_x)
             z = z.view(b, -1 , h, w)
