@@ -77,11 +77,8 @@ class SemanticMultiGroupConv(nn.Module):
             each_x = self.gconv1[i](x)
             each_x = self.norm[i](each_x)
             each_x = each_x.view(b, self.groups, -1)
-            print(each_x.shape)
             z = torch.matmul(aff_div_C[:,i].reshape(b , 1, -1), each_x)
-            print(z.shape)
             z = z.view(b, -1 , h, w)
-            print(z.shape)
             if result_x == None:
                 result_x = z
             else :
