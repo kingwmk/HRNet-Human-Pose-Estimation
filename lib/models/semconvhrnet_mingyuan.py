@@ -70,17 +70,18 @@ class SemanticMultiGroupConv(nn.Module):
         phi_x = x_vec.permute(0, 2, 1) 
         aff = torch.matmul(theta_x, phi_x) 
         N = aff.size(-1)
-        aff_div_C = aff / N
-        print(aff_div_C.shape)        
+        aff_div_C = aff / N    
 
         result_x = None
         for i in range(self.groups): 
-            xi = self.gconv1[i](x)
-            each_x = self.norm[i](xi)
+            each_x = self.gconv1[i](x)
+            each_x = self.norm[i](each_x)
             each_x = each_x.view(b, self.groups, -1)
+            print(each_x.shape)
+            print(aff_div_C[:,i].shape)
             z = torch.matmul(aff_div_C[:,i], each_x)
+            print(z.shape)
             z = z.view(b, -1 , h, w)
-
             print(z.shape)
             if result_x == None:
                 result_x = z
