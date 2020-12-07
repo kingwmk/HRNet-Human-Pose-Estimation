@@ -46,63 +46,45 @@ class SemanticMultiGroupConv(nn.Module):
         
         self.gconv1 = nn.ModuleList()
         self.norm = nn.ModuleList()
-        self.gconv2 = nn.ModuleList()
         self.norm2 = nn.ModuleList()
         for i in range(groups):
             self.gconv1.append(nn.Sequential(nn.Conv2d(in_channels, out_channels, kernel_size, stride, 
                     padding, dilation, groups, bias=False)))
             self.norm.append(nn.Sequential(nn.BatchNorm2d(in_channels)))
-            self.gconv2.append(nn.Sequential(nn.Conv2d(out_channels, aff_out_channels, 1, stride, 
-                    padding, dilation, groups, bias=False)))
-            self.norm2.append(nn.Sequential(nn.BatchNorm2d(aff_out_channels)))
-        
 
     def forward(self, x):
-        """
+    
+          """
         The code here is just a coarse implementation.
         The forward process can be quite slow and memory consuming, need to be optimized.
         """
-
+        
+        aff_x = self.gconv2(x)
+        aff_x = self.norm2(aff_x)
+        aff_x = self.relu(aff_x)
+        x_averaged = self.avg_pool(aff_x)
+             
+        x_vec = x_averaged.view(b, self.groups, -1)
+        theta_x = x_vec       
+        phi_x = x_vec.permute(0, 2, 1) 
+        aff = torch.matmul(theta_x, phi_x) 
+        N = aff.size(-1)
+        aff_div_C = aff / N
+        
+        each_x = []
         result_x = None
         for i in range(self.groups): 
-            each_x = self.gconv1[i](x)
-            b, c, h, w = each_x.size() 
-
-            each_x = self.norm[i](each_x)
-            each_x = self.relu(each_x)
-        
-            aff_x = self.gconv2[i](each_x)
-            aff_x = self.norm2[i](aff_x)
-            aff_x = self.relu(aff_x)
-            x_averaged = self.avg_pool(aff_x)
-#            print(x_averaged.shape)
-        
-#        theta_x = self.theta(x).view(batch_size, self.inter_channels, -1)
-#        theta_x = theta_x.permute(0, 2, 1)
-#        phi_x = self.phi(x).view(batch_size, self.inter_channels, -1)
-#        f = torch.matmul(theta_x, phi_x)
-#        N = f.size(-1)
-#        f_div_C = f / N
-        
-            x_vec = x_averaged.view(b, self.groups, -1)
-
-            theta_x = x_vec       
-            phi_x = x_vec.permute(0, 2, 1) 
-
-            aff = torch.matmul(theta_x, phi_x)
-
-            N = aff.size(-1)
-            aff_div_C = aff / N
-        
-            each_x= each_x.view(b, self.groups, -1)
-            z = torch.matmul(aff_div_C, each_x)
-            z = z.view(b, c, h, w)
+            xi = self.gconv1[i](x)
+            each_x.append(self.norm[i](xi))
+            each_x = each_x.view(b, self.groups, -1)
+            z = torch.matmul(aff_div_C[:,i], each_x)
+            z = z.view(b, -1 , h, w)
+            print(z.shape)
             if result_x == None:
                 result_x = z
             else :
-                result_x = result_x + z 
-        result_x = self.norm_out(result_x)
-        result_x = self.relu(result_x)
+                result_x = torch.cat ( (result_x, z), dim=1)
+
         return result_x
     
 def conv3x3(in_planes, out_planes, stride=1):
