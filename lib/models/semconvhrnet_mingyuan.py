@@ -55,11 +55,10 @@ class SemanticMultiGroupConv(nn.Module):
 
     def forward(self, x):
     
-          """
+        """
         The code here is just a coarse implementation.
         The forward process can be quite slow and memory consuming, need to be optimized.
         """
-        
         aff_x = self.gconv2(x)
         aff_x = self.norm2(aff_x)
         aff_x = self.relu(aff_x)
