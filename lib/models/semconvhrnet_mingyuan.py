@@ -42,7 +42,8 @@ class SemanticMultiGroupConv(nn.Module):
                 "head number can not be divided by output channels"
         self.grid = 16
         aff_out_channels = self.grid * out_channels
-
+        self.gconv2 = nn.Conv2d(in_channels, aff_out_channels, kernel_size, stride, 
+                padding, dilation, groups, bias=False)
         
         self.gconv1 = nn.ModuleList()
         self.norm = nn.ModuleList()
