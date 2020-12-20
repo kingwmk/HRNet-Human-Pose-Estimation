@@ -21,6 +21,6 @@ import models.semconvhrnet_aspp
 #import models.pose_semnet
 #import models.semconvhrnet
 #import models.semconvhrnet_cat
-#import models.base_semhrnet
+import models.base_semhrnet_aspp
 #import models.base_semhrnet2
 #import models.semconvhrnet_mingyuan
