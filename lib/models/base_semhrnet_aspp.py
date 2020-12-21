@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 class ASPP(nn.Module):
 
-    def __init__(self, in_ch, out_ch, groups = 16, dilation_series=[1,2,3,4], padding_series=[1,2,3,4]):
+    def __init__(self, in_ch, out_ch, groups = 16, dilation_series=[1,2,3,4], padding_series=[1,1,1,1]):
         super(ASPP, self).__init__()
         self.conv2d_list = nn.ModuleList()
         self.groups = groups
