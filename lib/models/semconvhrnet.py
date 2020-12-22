@@ -40,7 +40,7 @@ class SemanticMultiGroupConv(nn.Module):
                 "head number can not be divided by input channels"
         assert self.out_channels % self.groups == 0, \
                 "head number can not be divided by output channels"
-        self.grid = 16
+        self.grid = 25
         aff_out_channels = self.grid * out_channels
 
         
