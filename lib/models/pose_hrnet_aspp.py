@@ -27,7 +27,7 @@ def conv3x3(in_planes, out_planes, stride=1):
 
 class ASPP(nn.Module):
 
-    def __init__(self, in_ch, out_ch, dilation_series=[1,2,3,4], padding_series=[1,2,3,4]):
+    def __init__(self, in_ch, out_ch, dilation_series=[1,3,5,7], padding_series=[1,3,5,7]):
         super(ASPP, self).__init__()
         self.conv2d_list = nn.ModuleList()
         for dilation, padding in zip(dilation_series, padding_series):
