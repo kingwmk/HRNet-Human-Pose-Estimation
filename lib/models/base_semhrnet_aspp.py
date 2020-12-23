@@ -447,17 +447,17 @@ class SemconvNet(nn.Module):
 
         self.bn4 = nn.BatchNorm2d(extend_channels, momentum=BN_MOMENTUM)
         self.stage4_semantic_block = SemanticBlock(extend_channels, cfg.MODEL.NUM_JOINTS)
-        self.hrnet_aspp_predict_layer = ASPP(extend_channels, cfg.MODEL.NUM_JOINTS, groups = cfg.MODEL.NUM_JOINTS)
+#        self.hrnet_aspp_predict_layer = ASPP(extend_channels, cfg.MODEL.NUM_JOINTS, groups = cfg.MODEL.NUM_JOINTS)
         self.stage4_aspp_predict_layer = ASPP(extend_channels, cfg.MODEL.NUM_JOINTS, groups = cfg.MODEL.NUM_JOINTS)
 #        self.stage4_semantic_block_2 = SemanticBlock(extend_channels, cfg.MODEL.NUM_JOINTS)
-#        self.hrnet_predict_layer = nn.Conv2d(
-#            in_channels=extend_channels,
-#            out_channels=cfg.MODEL.NUM_JOINTS,
-#            kernel_size=extra.FINAL_CONV_KERNEL,
-#            groups = cfg.MODEL.NUM_JOINTS,
-#            stride=1,
-#            padding=1 if extra.FINAL_CONV_KERNEL == 3 else 0
-#        )
+        self.hrnet_predict_layer = nn.Conv2d(
+            in_channels=extend_channels,
+            out_channels=cfg.MODEL.NUM_JOINTS,
+            kernel_size=extra.FINAL_CONV_KERNEL,
+            groups = cfg.MODEL.NUM_JOINTS,
+            stride=1,
+            padding=1 if extra.FINAL_CONV_KERNEL == 3 else 0
+        )
 #        extend_channels = extend_channels*2
 #        self.stage4_predict_layer = nn.Conv2d(
 #            in_channels=extend_channels,
@@ -598,8 +598,8 @@ class SemconvNet(nn.Module):
         x = self.extend_layer(y_list[0]) 
         x = self.bn4(x)
         x = self.relu(x)
-        hrnet_predict = self.hrnet_aspp_predict_layer(x)
-#        hrnet_predict = self.hrnet_predict_layer(x)
+#        hrnet_predict = self.hrnet_aspp_predict_layer(x)
+        hrnet_predict = self.hrnet_predict_layer(x)
         
         sem_x = self.stage4_semantic_block(x)
  #       sem_2 = self.stage4_semantic_block_2(x)
