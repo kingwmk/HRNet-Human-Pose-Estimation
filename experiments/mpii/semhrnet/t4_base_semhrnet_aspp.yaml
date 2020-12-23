@@ -24,7 +24,7 @@ DATASET:
   TRAIN_SET: train
 MODEL:
   INIT_WEIGHTS: true
-  NAME: base_semhrnet_aspp
+  NAME: t4_base_semhrnet_aspp_block
   NUM_JOINTS: 16
   PRETRAINED: 'models/pytorch/imagenet/hrnet_w32-36af842e.pth'
   TARGET_TYPE: gaussian
