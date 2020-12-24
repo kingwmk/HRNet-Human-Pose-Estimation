@@ -27,7 +27,9 @@ class ASPP(nn.Module):
         self.groups = groups
         for dilation, padding in zip(dilation_series, padding_series):
             self.conv2d_list.append(nn.Conv2d(in_ch, out_ch, kernel_size=3, stride=1, padding=padding, dilation=dilation, groups=groups, bias = True))
-
+        for m in self.conv2d_list:
+            m.weight.data.normal_(0, 0.01)
+            
     def forward(self, x):
         out = self.conv2d_list[0](x)
         for i in range(len(self.conv2d_list)-1):
@@ -461,15 +463,15 @@ class SemanticPoseHighResolutionNet(nn.Module):
         self.bn4 = nn.BatchNorm2d(extend_channels, momentum=BN_MOMENTUM)
         self.stage4_semantic_block_1 = SemanticBlock(extend_channels, cfg.MODEL.NUM_JOINTS)
 #        self.stage4_semantic_block_2 = SemanticBlock(extend_channels, cfg.MODEL.NUM_JOINTS)
-#        self.hrnet_predict_layer = nn.Conv2d(
-#            in_channels=extend_channels,
-#            out_channels=cfg.MODEL.NUM_JOINTS,
-#            kernel_size=extra.FINAL_CONV_KERNEL,
-#            groups = cfg.MODEL.NUM_JOINTS,
-#            stride=1,
-#            padding=1 if extra.FINAL_CONV_KERNEL == 3 else 0
-#        )
-        self.hrnet_aspp_predict_layer = ASPP(extend_channels, cfg.MODEL.NUM_JOINTS, groups = cfg.MODEL.NUM_JOINTS)
+        self.hrnet_predict_layer = nn.Conv2d(
+            in_channels=extend_channels,
+            out_channels=cfg.MODEL.NUM_JOINTS,
+            kernel_size=extra.FINAL_CONV_KERNEL,
+            groups = cfg.MODEL.NUM_JOINTS,
+            stride=1,
+            padding=1 if extra.FINAL_CONV_KERNEL == 3 else 0
+        )
+#        self.hrnet_aspp_predict_layer = ASPP(extend_channels, cfg.MODEL.NUM_JOINTS, groups = cfg.MODEL.NUM_JOINTS)
 #        extend_channels = extend_channels*2
 #        self.stage4_predict_layer = nn.Conv2d(
 #            in_channels=extend_channels,
@@ -613,7 +615,7 @@ class SemanticPoseHighResolutionNet(nn.Module):
         x = self.extend_layer(x) 
         x = self.bn4(x)
         x = self.relu(x)
-        hrnet_predict = self.hrnet_aspp_predict_layer(x)
+        hrnet_predict = self.hrnet_predict_layer(x)
 
         sem_1 = self.stage4_semantic_block_1(x)
 #       sem_2 = self.stage4_semantic_block_2(x)
