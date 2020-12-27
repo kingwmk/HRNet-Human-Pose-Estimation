@@ -18,6 +18,24 @@ from models.layers import SemanticMultiGroupConv
 BN_MOMENTUM = 0.1
 logger = logging.getLogger(__name__)
 
+class ASPP(nn.Module):
+
+    def __init__(self, in_ch, out_ch, groups = 16, dilation_series=[1,2,3,4], padding_series=[1,2,3,4]):
+        super(ASPP, self).__init__()
+        self.conv2d_list = nn.ModuleList()
+        self.groups = groups
+        for dilation, padding in zip(dilation_series, padding_series):
+#            self.conv2d_list.append(nn.Conv2d(in_ch, out_ch, kernel_size=3, stride=1, padding=padding, dilation=dilation, groups=groups, bias = True))
+            self.conv2d_list.append(nn.Conv2d(in_ch, out_ch, kernel_size=3, stride=1, padding=padding, dilation=dilation, bias = True))
+        
+        for m in self.conv2d_list:
+            m.weight.data.normal_(0, 0.01)
+
+    def forward(self, x):
+        out = self.conv2d_list[0](x)
+        for i in range(len(self.conv2d_list)-1):
+            out += self.conv2d_list[i+1](x)
+        return out
 
 class SemanticMultiGroupConv(nn.Module):
     global_progress = 0.0
@@ -450,6 +468,7 @@ class SemconvNet(nn.Module):
             stride=1,
             padding=1 if extra.FINAL_CONV_KERNEL == 3 else 0
         )
+        self.stage4_aspp_predict_layer = ASPP(extend_channels, cfg.MODEL.NUM_JOINTS, groups = cfg.MODEL.NUM_JOINTS)
 
         self.pretrained_layers = cfg['MODEL']['EXTRA']['PRETRAINED_LAYERS']
 
@@ -591,8 +610,9 @@ class SemconvNet(nn.Module):
 #        b, c, h, w = sem.size()
 #        branches = 2
 #        sem_x = sem.view(b, branches, c // branches, h, w).permute(0, 2, 1, 3, 4).contiguous().view(b, c, h, w)
-        
-        stage4_predict = self.stage4_predict_layer(sem_x)
+        aspp_predict = self.stage4_aspp_predict_layer(sem_x)
+        sem_predict = self.stage4_predict_layer(sem_x)
+        stage4_predict = aspp_predict + sem_predict
         return hrnet_predict, stage4_predict
 
         return x
