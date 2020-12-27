@@ -12,7 +12,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import models.pose_hrnet_aspp
+import models.base_semhrnet_aspp_pal
 #import models.pose_resnet
 import models.pose_hrnet
 import models.semconvhrnet_aspp
