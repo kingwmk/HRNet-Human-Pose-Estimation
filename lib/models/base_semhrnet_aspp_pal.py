@@ -25,8 +25,8 @@ class ASPP(nn.Module):
         self.conv2d_list = nn.ModuleList()
         self.groups = groups
         for dilation, padding in zip(dilation_series, padding_series):
-#            self.conv2d_list.append(nn.Conv2d(in_ch, out_ch, kernel_size=3, stride=1, padding=padding, dilation=dilation, groups=groups, bias = True))
-            self.conv2d_list.append(nn.Conv2d(in_ch, out_ch, kernel_size=3, stride=1, padding=padding, dilation=dilation, bias = True))
+            self.conv2d_list.append(nn.Conv2d(in_ch, out_ch, kernel_size=3, stride=1, padding=padding, dilation=dilation, groups=groups, bias = True))
+#            self.conv2d_list.append(nn.Conv2d(in_ch, out_ch, kernel_size=3, stride=1, padding=padding, dilation=dilation, bias = True))
         
         for m in self.conv2d_list:
             m.weight.data.normal_(0, 0.01)
