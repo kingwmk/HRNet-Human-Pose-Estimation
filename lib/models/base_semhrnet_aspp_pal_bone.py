@@ -124,13 +124,10 @@ class SemanticMultiGroupConv(nn.Module):
         aff = torch.matmul(theta_x, phi_x)
 
         if str(aff.device) == "cpu":
-            print('aaaa')
             bone = self.bone.repeat(b,1,1)
         else:
             bone = self.bone.cuda().repeat(b,1,1)
         aff = aff + bone
-
-        print(aff)
         
         N = aff.size(-1)
         aff_div_C = aff / N
