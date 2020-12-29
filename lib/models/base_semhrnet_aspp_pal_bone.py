@@ -121,7 +121,7 @@ class SemanticMultiGroupConv(nn.Module):
         theta_x = x_vec       
         phi_x = x_vec.permute(0, 2, 1) 
 
-        aff = torch.matmul(theta_x, phi_x)
+        aff = torch.matmul(theta_x, phi_x).cuda()
         print(aff.dtype)
         if aff.dtype == torch.float32:
             print('aaaa')
