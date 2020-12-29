@@ -131,7 +131,7 @@ class SemanticMultiGroupConv(nn.Module):
         N = aff.size(-1)
         aff_div_C = aff / N
 
-        x = x.view(b, self.groups, -1)
+        x = x.view(b, self.groups, -1).cuda()
         z = torch.matmul(aff_div_C, x)
         
         z = z.view(b, c, h, w)
