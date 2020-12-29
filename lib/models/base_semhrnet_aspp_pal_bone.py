@@ -18,6 +18,32 @@ from models.layers import SemanticMultiGroupConv
 BN_MOMENTUM = 0.1
 logger = logging.getLogger(__name__)
 
+#                右脚踝     右膝盖   右臀    左臀   左膝盖  左脚踝   骨盆    胸膛   上颈部   头顶    右手腕   右肘部  右肩膀  左肩膀   左肘部  左手腕 
+#                r ankle  r knee  r hip  l hip   l knee  l ankle pelvis  thorax up neck  headtop r wrist r elbow rshlde lshlde  lelbow  lwrist
+bone = np.array([[ 0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0],
+                 [ 0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0],
+                 [ 0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0],
+                 [ 0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0],
+                 [ 0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0],
+                 [ 0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0],
+                 [ 0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0],
+                 [ 0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0],
+                 [ 0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0],
+                 [ 0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0],
+                 [ 0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0],
+                 [ 0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0],
+                 [ 0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0],
+                 [ 0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0],
+                 [ 0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0],
+                 [ 0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0]
+                ])
+
+
+
+
+bone = torch.from_numpy(bone)
+
+
 class ASPP(nn.Module):
 
     def __init__(self, in_ch, out_ch, groups = 16, dilation_series=[1,2,3,4], padding_series=[1,2,3,4]):
@@ -98,6 +124,7 @@ class SemanticMultiGroupConv(nn.Module):
         phi_x = x_vec.permute(0, 2, 1) 
 
         aff = torch.matmul(theta_x, phi_x)
+        aff = aff + bone
         print(aff.shape)
         print(aff)
         
