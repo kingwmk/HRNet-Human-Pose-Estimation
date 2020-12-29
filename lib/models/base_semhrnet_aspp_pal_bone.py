@@ -125,7 +125,7 @@ class SemanticMultiGroupConv(nn.Module):
         bone = self.bone.cuda().repeat(b,1,1)
         print(bone.shape)
         aff = aff + bone
-        print(bone.atype)
+
         print(aff)
         
         N = aff.size(-1)
