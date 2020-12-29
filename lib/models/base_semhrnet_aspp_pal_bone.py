@@ -10,7 +10,7 @@ from __future__ import print_function
 
 import os
 import logging
-
+import numpy as np
 import torch
 import torch.nn as nn
 from models.layers import SemanticMultiGroupConv
