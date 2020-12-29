@@ -41,7 +41,7 @@ bone = np.array([[ 1 ,     1 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,  
 
 
 
-bone = torch.from_numpy(bone.cuda())
+bone = torch.from_numpy(bone)
 
 
 class ASPP(nn.Module):
@@ -124,7 +124,7 @@ class SemanticMultiGroupConv(nn.Module):
         phi_x = x_vec.permute(0, 2, 1) 
 
         aff = torch.matmul(theta_x, phi_x)
-        bone.repeat(b,1,1)
+        bone = bone.cuda().repeat(b,1,1)
         print(bone.shape)
         aff = aff + bone
         print(aff.shape)
