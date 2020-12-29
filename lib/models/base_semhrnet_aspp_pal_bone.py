@@ -121,14 +121,14 @@ class SemanticMultiGroupConv(nn.Module):
         theta_x = x_vec       
         phi_x = x_vec.permute(0, 2, 1) 
 
-        aff = torch.matmul(theta_x, phi_x).cuda()
-        print(aff.dtype)
-#        if aff.dtype == torch.float32:
-#            print('aaaa')
-#            bone = self.bone.repeat(b,1,1)
-#        else:
-#            bone = self.bone.cuda().repeat(b,1,1)
-#        aff = aff + bone
+        aff = torch.matmul(theta_x, phi_x)
+
+        if aff.device == cpu:
+            print('aaaa')
+            bone = self.bone.repeat(b,1,1)
+        else:
+            bone = self.bone.cuda().repeat(b,1,1)
+        aff = aff + bone
 
         print(aff)
         
