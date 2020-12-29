@@ -124,6 +124,7 @@ class SemanticMultiGroupConv(nn.Module):
         aff = torch.matmul(theta_x, phi_x)
         print(aff.dtype)
         if aff.dtype == 'torch.float32':
+            print('aaaa')
             bone = self.bone.repeat(b,1,1)
         else:
             bone = self.bone.cuda().repeat(b,1,1)
