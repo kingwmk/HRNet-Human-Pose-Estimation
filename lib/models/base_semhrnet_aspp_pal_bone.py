@@ -126,8 +126,6 @@ class SemanticMultiGroupConv(nn.Module):
         print(bone.shape)
         aff = aff + bone
         print(bone.atype)
-        print(aff.atype)
-        print(aff.shape)
         print(aff)
         
         N = aff.size(-1)
