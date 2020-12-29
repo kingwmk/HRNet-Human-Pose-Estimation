@@ -122,6 +122,7 @@ class SemanticMultiGroupConv(nn.Module):
         phi_x = x_vec.permute(0, 2, 1) 
 
         aff = torch.matmul(theta_x, phi_x)
+        print(aff.dtype)
         if aff.dtype == 'torch.float32':
             bone = self.bone.repeat(b,1,1)
         else:
