@@ -42,9 +42,22 @@ class ASPP(nn.Module):
 
 class SemanticMultiGroupConv(nn.Module):
   
+    global_progress = 0.0
+    def __init__(self, in_channels, out_channels, kernel_size=3, stride=1,
+                 padding=1, dilation=1 ,groups=16):
+        super(SemanticMultiGroupConv, self).__init__()
+        self.norm = nn.BatchNorm2d(in_channels)
+        self.relu = nn.ReLU(inplace=True)
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+        self.groups = groups
+        self.stride = stride 
+        self.padding = padding 
+
     #                右脚踝     右膝盖   右臀    左臀   左膝盖  左脚踝   骨盆    胸膛   上颈部   头顶    右手腕   右肘部  右肩膀  左肩膀   左肘部  左手腕 
 #                r ankle  r knee  r hip  l hip   l knee  l ankle pelvis  thorax up neck  headtop r wrist r elbow rshlde lshlde  lelbow  lwrist
-    bone = np.array([[ 1 ,     1 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0],
+        bone = np.array([[ 1 ,     1 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0],
                  [ 1 ,     1 ,     1 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0],
                  [ 0 ,     1 ,     1 ,     1 ,     0 ,     0 ,     1 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0],
                  [ 0 ,     0 ,     1 ,     1 ,     1 ,     0 ,     1 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0],
@@ -62,21 +75,7 @@ class SemanticMultiGroupConv(nn.Module):
                  [ 0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     1 ,     1]
                 ])
 
-    bone = torch.from_numpy(bone)
-    global_progress = 0.0
-    def __init__(self, in_channels, out_channels, kernel_size=3, stride=1,
-                 padding=1, dilation=1 ,groups=16):
-        super(SemanticMultiGroupConv, self).__init__()
-        self.norm = nn.BatchNorm2d(in_channels)
-        self.relu = nn.ReLU(inplace=True)
-        self.avg_pool = nn.AdaptiveAvgPool2d(1)
-        self.in_channels = in_channels
-        self.out_channels = out_channels
-        self.groups = groups
-        self.stride = stride 
-        self.padding = padding 
-
-
+        bone = torch.from_numpy(bone)
 
         ### Check if arguments are valid
         assert self.in_channels % self.groups == 0, \
