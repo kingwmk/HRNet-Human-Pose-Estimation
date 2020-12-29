@@ -124,6 +124,7 @@ class SemanticMultiGroupConv(nn.Module):
         phi_x = x_vec.permute(0, 2, 1) 
 
         aff = torch.matmul(theta_x, phi_x)
+        bone.repeat(b,1,1)
         aff = aff + bone
         print(aff.shape)
         print(aff)
