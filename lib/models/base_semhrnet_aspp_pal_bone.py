@@ -57,7 +57,7 @@ class SemanticMultiGroupConv(nn.Module):
 
     #                右脚踝     右膝盖   右臀    左臀   左膝盖  左脚踝   骨盆    胸膛   上颈部   头顶    右手腕   右肘部  右肩膀  左肩膀   左肘部  左手腕 
 #                r ankle  r knee  r hip  l hip   l knee  l ankle pelvis  thorax up neck  headtop r wrist r elbow rshlde lshlde  lelbow  lwrist
-        self.bone = np.array([[ 1 ,     1 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0],
+        bone = np.array([[ 1 ,     1 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0],
                  [ 1 ,     1 ,     1 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0],
                  [ 0 ,     1 ,     1 ,     1 ,     0 ,     0 ,     1 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0],
                  [ 0 ,     0 ,     1 ,     1 ,     1 ,     0 ,     1 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0],
@@ -75,7 +75,7 @@ class SemanticMultiGroupConv(nn.Module):
                  [ 0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     0 ,     1 ,     1]
                 ])
 
-        bone = torch.from_numpy(bone)
+        self.bone = torch.from_numpy(bone)
 
         ### Check if arguments are valid
         assert self.in_channels % self.groups == 0, \
