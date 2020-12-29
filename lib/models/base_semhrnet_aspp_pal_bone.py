@@ -123,7 +123,7 @@ class SemanticMultiGroupConv(nn.Module):
 
         aff = torch.matmul(theta_x, phi_x)
 
-        if aff.device == cpu:
+        if aff.device == "cpu":
             print('aaaa')
             bone = self.bone.repeat(b,1,1)
         else:
