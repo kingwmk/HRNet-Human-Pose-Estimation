@@ -77,6 +77,7 @@ class ASPP(nn.Module):
 class SpatialConv(nn.Module):
     def __init__(self, in_ch, out_ch):
         super(SpatialConv, self).__init__()
+        efficient = False
         self.conv_bn_relu_prm_1 = conv_bn_relu(in_ch, out_ch, kernel_size=3,
                 stride=1, padding=1, has_bn=True, has_relu=True,
                 efficient=efficient)
