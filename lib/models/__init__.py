@@ -12,7 +12,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import models.base_semhrnet_aspp_pal
+import models.base_semhrnet_aspp_spatial_pal
 #import models.pose_resnet
 import models.base_semhrnet_aspp_pal_bone
 import models.semconvhrnet_aspp
