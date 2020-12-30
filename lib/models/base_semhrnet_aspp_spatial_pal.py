@@ -75,7 +75,7 @@ class ASPP(nn.Module):
         return out
     
 class SpatialConv(nn.Module):
-    def __init__(self, in_ch, out_ch, groups = 16):
+    def __init__(self, in_ch, out_ch):
         super(SpatialConv, self).__init__()
         self.conv_bn_relu_prm_1 = conv_bn_relu(self.output_chl_num, self.output_chl_num, kernel_size=3,
                 stride=1, padding=1, has_bn=True, has_relu=True,
@@ -498,6 +498,7 @@ class SemconvNet(nn.Module):
             pre_stage_channels, num_channels)
         self.stage4, pre_stage_channels = self._make_stage(
             self.stage4_cfg, num_channels, multi_scale_output=False)
+        self.spatial_block = SpatialConv(pre_stage_channels[0],pre_stage_channels[0])
 
         extend_channels = cfg.MODEL.NUM_JOINTS*4
         self.extend_layer = nn.Conv2d(
@@ -656,8 +657,9 @@ class SemconvNet(nn.Module):
             else:
                 x_list.append(y_list[i])
         y_list = self.stage4(x_list)
-
-        x = self.extend_layer(y_list[0]) 
+        
+        x = self.spatial_block(y_list[0]) 
+        x = self.extend_layer(x) 
         x = self.bn4(x)
         x = self.relu(x)
         hrnet_predict = self.hrnet_predict_layer(x)
