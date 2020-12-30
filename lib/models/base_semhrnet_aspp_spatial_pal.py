@@ -18,6 +18,43 @@ from models.layers import SemanticMultiGroupConv
 BN_MOMENTUM = 0.1
 logger = logging.getLogger(__name__)
 
+from torch.utils.checkpoint import checkpoint
+
+class conv_bn_relu(nn.Module):
+
+    def __init__(self, in_planes, out_planes, kernel_size, stride, padding, 
+            has_bn=True, has_relu=True, efficient=False,groups=1):
+        super(conv_bn_relu, self).__init__()
+        self.conv = nn.Conv2d(in_planes, out_planes, kernel_size=kernel_size,
+                stride=stride, padding=padding,groups=groups)
+        self.has_bn = has_bn
+        self.has_relu = has_relu
+        self.efficient = efficient
+        self.bn = nn.BatchNorm2d(out_planes)
+        self.relu = nn.ReLU(inplace=True)
+
+    def forward(self, x):
+        def _func_factory(conv, bn, relu, has_bn, has_relu):
+            def func(x):
+                x = conv(x)
+                if has_bn:
+                    x = bn(x)
+                if has_relu:
+                    x = relu(x)
+                return x
+            return func 
+
+        func = _func_factory(
+                self.conv, self.bn, self.relu, self.has_bn, self.has_relu)
+
+        if self.efficient:
+            x = checkpoint(func, x)
+        else:
+            x = func(x)
+
+        return x
+
+
 class ASPP(nn.Module):
 
     def __init__(self, in_ch, out_ch, groups = 16, dilation_series=[1,2,3,4], padding_series=[1,2,3,4]):
@@ -36,6 +73,29 @@ class ASPP(nn.Module):
         for i in range(len(self.conv2d_list)-1):
             out += self.conv2d_list[i+1](x)
         return out
+    
+class SpatialConv(nn.Module):
+    def __init__(self, in_ch, out_ch, groups = 16):
+        super(SpatialConv, self).__init__()
+        self.conv_bn_relu_prm_1 = conv_bn_relu(self.output_chl_num, self.output_chl_num, kernel_size=3,
+                stride=1, padding=1, has_bn=True, has_relu=True,
+                efficient=efficient)
+        self.conv_bn_relu_prm_3_1 = conv_bn_relu(self.output_chl_num, self.output_chl_num, kernel_size=1,
+                stride=1, padding=0, has_bn=True, has_relu=True,
+                efficient=efficient)        
+        self.conv_bn_relu_prm_3_2 = conv_bn_relu(self.output_chl_num, self.output_chl_num, kernel_size=9,
+                stride=1, padding=4, has_bn=True, has_relu=True,
+                efficient=efficient,groups=self.output_chl_num)
+        self.sigmoid = nn.Sigmoid()
+        
+    def forward(self, x):
+        out = self.conv_bn_relu_prm_1(x)
+        out_1 = self.conv_bn_relu_prm_3_1(out)
+        out_1 = self.conv_bn_relu_prm_3_2(out_1)
+        out_1 = self.sigmoid(out_1)
+        out = out + out.mul(out_1)
+        return out    
+    
 
 class SemanticMultiGroupConv(nn.Module):
     global_progress = 0.0
