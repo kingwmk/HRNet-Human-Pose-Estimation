@@ -75,12 +75,12 @@ class ASPP(nn.Module):
         return out
     
 class SpatialConv(nn.Module):
-    def __init__(self, in_ch, out_ch):
+    def __init__(self, in_ch, out_ch,groups=1):
         super(SpatialConv, self).__init__()
         efficient = False
         self.conv_bn_relu_prm_1 = conv_bn_relu(in_ch, out_ch, kernel_size=3,
                 stride=1, padding=1, has_bn=True, has_relu=True,
-                efficient=efficient)
+                efficient=efficient,groups=groups)
         self.conv_bn_relu_prm_3_1 = conv_bn_relu(out_ch, out_ch, kernel_size=1,
                 stride=1, padding=0, has_bn=True, has_relu=True,
                 efficient=efficient)        
@@ -499,7 +499,7 @@ class SemconvNet(nn.Module):
             pre_stage_channels, num_channels)
         self.stage4, pre_stage_channels = self._make_stage(
             self.stage4_cfg, num_channels, multi_scale_output=False)
-        self.spatial_block = SpatialConv(pre_stage_channels[0],pre_stage_channels[0])
+        self.spatial_block = SpatialConv(pre_stage_channels[0],pre_stage_channels[0],cfg.MODEL.NUM_JOINTS)
 
         extend_channels = cfg.MODEL.NUM_JOINTS*4
         self.extend_layer = nn.Conv2d(
@@ -659,12 +659,11 @@ class SemconvNet(nn.Module):
                 x_list.append(y_list[i])
         y_list = self.stage4(x_list)
         
-        x = self.spatial_block(y_list[0]) 
-        x = self.extend_layer(x) 
+        x = self.extend_layer(y_list[0]) 
         x = self.bn4(x)
         x = self.relu(x)
         hrnet_predict = self.hrnet_predict_layer(x)
-        
+        spatial_x = self.spatial_block(x) 
         sem_x = self.stage4_semantic_block(x)
  #       sem_2 = self.stage4_semantic_block_2(x)
 
