@@ -499,7 +499,6 @@ class SemconvNet(nn.Module):
             pre_stage_channels, num_channels)
         self.stage4, pre_stage_channels = self._make_stage(
             self.stage4_cfg, num_channels, multi_scale_output=False)
-        self.spatial_block = SpatialConv(pre_stage_channels[0],pre_stage_channels[0],cfg.MODEL.NUM_JOINTS)
 
         extend_channels = cfg.MODEL.NUM_JOINTS*4
         self.extend_layer = nn.Conv2d(
@@ -511,6 +510,7 @@ class SemconvNet(nn.Module):
         )
 
         self.bn4 = nn.BatchNorm2d(extend_channels, momentum=BN_MOMENTUM)
+        self.spatial_block = SpatialConv(extend_channels,extend_channels,cfg.MODEL.NUM_JOINTS)
         self.stage4_semantic_block = SemanticBlock(extend_channels, cfg.MODEL.NUM_JOINTS)
 #        self.stage4_semantic_block_2 = SemanticBlock(extend_channels, cfg.MODEL.NUM_JOINTS)
         self.hrnet_predict_layer = nn.Conv2d(
@@ -672,8 +672,9 @@ class SemconvNet(nn.Module):
 #        b, c, h, w = sem.size()
 #        branches = 2
 #        sem_x = sem.view(b, branches, c // branches, h, w).permute(0, 2, 1, 3, 4).contiguous().view(b, c, h, w)
-        aspp_predict = self.stage4_aspp_predict_layer(sem_x)
-        sem_predict = self.stage4_predict_layer(sem_x)
+        x = sem_x + spatial_x
+        aspp_predict = self.stage4_aspp_predict_layer(x)
+        sem_predict = self.stage4_predict_layer(x)
         stage4_predict = aspp_predict + sem_predict
         return hrnet_predict, stage4_predict
 
