@@ -83,7 +83,7 @@ class SpatialConv(nn.Module):
                 efficient=efficient,groups=groups)
         self.conv_bn_relu_prm_3_1 = conv_bn_relu(out_ch, out_ch, kernel_size=1,
                 stride=1, padding=0, has_bn=True, has_relu=True,
-                efficient=efficient)        
+                efficient=efficient,groups=groups)        
         self.conv_bn_relu_prm_3_2 = conv_bn_relu(out_ch, out_ch, kernel_size=9,
                 stride=1, padding=4, has_bn=True, has_relu=True,
                 efficient=efficient,groups=out_ch)
