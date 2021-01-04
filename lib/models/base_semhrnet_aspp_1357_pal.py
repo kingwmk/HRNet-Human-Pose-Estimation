@@ -40,7 +40,7 @@ class ASPP(nn.Module):
 class SemanticMultiGroupConv(nn.Module):
     global_progress = 0.0
     def __init__(self, in_channels, out_channels, kernel_size=3, stride=1,
-                 padding=1, dilation=0, groups=16):
+                 padding=1, dilation=1, groups=16):
         super(SemanticMultiGroupConv, self).__init__()
 
         self.relu = nn.ReLU(inplace=True)
@@ -387,11 +387,11 @@ class SemanticBlock(nn.Module):
         self.bn2 = nn.BatchNorm2d(in_channels, momentum=BN_MOMENTUM)
         
         self.relu = nn.ReLU(inplace=True)
-            
+   
         ### 3x3 Semantic conv: in_channels --> in_channels
         self.conv_2 = SemanticMultiGroupConv(
                 in_channels, in_channels,kernel_size=3, stride=1,
-                 padding=1, groups= num_joints)
+                 padding=1, dilation=1, groups= num_joints)
         
     def forward(self, x):
         residual = x
