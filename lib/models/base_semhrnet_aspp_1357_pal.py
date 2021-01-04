@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 class ASPP(nn.Module):
 
-    def __init__(self, in_ch, out_ch, groups = 16, dilation_series=[1,3,5,7], padding_series=[1,3,5,7]):
+    def __init__(self, in_ch, out_ch, groups = 16, dilation_series=[1,2,3,4], padding_series=[1,2,3,4]):
         super(ASPP, self).__init__()
         self.conv2d_list = nn.ModuleList()
         self.groups = groups
@@ -36,13 +36,13 @@ class ASPP(nn.Module):
         for i in range(len(self.conv2d_list)-1):
             out += self.conv2d_list[i+1](x)
         return out
-
+    
 class SemanticMultiGroupConv(nn.Module):
     global_progress = 0.0
     def __init__(self, in_channels, out_channels, kernel_size=3, stride=1,
-                 padding=1, dilation=1 ,groups=16):
+                 padding=1, dilation=0, groups=16):
         super(SemanticMultiGroupConv, self).__init__()
-        self.norm = nn.BatchNorm2d(in_channels)
+
         self.relu = nn.ReLU(inplace=True)
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         self.in_channels = in_channels
@@ -50,24 +50,29 @@ class SemanticMultiGroupConv(nn.Module):
         self.groups = groups
         self.stride = stride 
         self.padding = padding 
-
-
+        self.dilation = dilation
+        self.norm_out = nn.BatchNorm2d(out_channels)
 
         ### Check if arguments are valid
         assert self.in_channels % self.groups == 0, \
                 "head number can not be divided by input channels"
         assert self.out_channels % self.groups == 0, \
                 "head number can not be divided by output channels"
-
-        self.gconv1 = nn.Conv2d(in_channels, out_channels, kernel_size, stride, 
-                padding, dilation, groups, bias=False)
-        
-        self.grid = 25
+        self.grid = 16
         aff_out_channels = self.grid * out_channels
-        kernel_size = 1
-        self.gconv2 = nn.Conv2d(out_channels, aff_out_channels, kernel_size, stride, 
-                padding, dilation, groups, bias=False)
-        self.norm2 = nn.BatchNorm2d(aff_out_channels)
+
+        
+        self.gconv1 = nn.ModuleList()
+        self.norm = nn.ModuleList()
+        self.gconv2 = nn.ModuleList()
+        self.norm2 = nn.ModuleList()
+        for i in range(groups):
+            self.gconv1.append(nn.Sequential(nn.Conv2d(in_channels, out_channels, kernel_size, stride, 
+                    padding, dilation, groups, bias=False)))
+            self.norm.append(nn.Sequential(nn.BatchNorm2d(in_channels)))
+            self.gconv2.append(nn.Sequential(nn.Conv2d(out_channels, aff_out_channels, 1, stride, 
+                    padding, dilation, groups, bias=False)))
+            self.norm2.append(nn.Sequential(nn.BatchNorm2d(aff_out_channels)))
         
 
     def forward(self, x):
@@ -75,15 +80,21 @@ class SemanticMultiGroupConv(nn.Module):
         The code here is just a coarse implementation.
         The forward process can be quite slow and memory consuming, need to be optimized.
         """
-        x = self.gconv1(x)
-        b, c, h, w = x.size() 
-        x = self.norm(x)
-        x = self.relu(x)
+
+        result_x = None
+        pal = 4
+        for i in range(pal): 
+            each_x = self.gconv1[i](x)
+            b, c, h, w = each_x.size() 
+
+            each_x = self.norm[i](each_x)
+            each_x = self.relu(each_x)
         
-        aff_x = self.gconv2(x)
-        aff_x = self.norm2(aff_x)
-        aff_x = self.relu(aff_x)
-        x_averaged = self.avg_pool(aff_x)
+            aff_x = self.gconv2[i](each_x)
+            aff_x = self.norm2[i](aff_x)
+            aff_x = self.relu(aff_x)
+            x_averaged = self.avg_pool(aff_x)
+#            print(x_averaged.shape)
         
 #        theta_x = self.theta(x).view(batch_size, self.inter_channels, -1)
 #        theta_x = theta_x.permute(0, 2, 1)
@@ -92,23 +103,26 @@ class SemanticMultiGroupConv(nn.Module):
 #        N = f.size(-1)
 #        f_div_C = f / N
         
-        x_vec = x_averaged.view(b, self.groups, -1)
+            x_vec = x_averaged.view(b, self.groups, -1)
 
-        theta_x = x_vec       
-        phi_x = x_vec.permute(0, 2, 1) 
+            theta_x = x_vec       
+            phi_x = x_vec.permute(0, 2, 1) 
 
-        aff = torch.matmul(theta_x, phi_x)
+            aff = torch.matmul(theta_x, phi_x)
+
+            N = aff.size(-1)
+            aff_div_C = aff / N
         
-        N = aff.size(-1)
-        aff_div_C = aff / N
-
-        x = x.view(b, self.groups, -1)
-        z = torch.matmul(aff_div_C, x)
-        
-        z = z.view(b, c, h, w)
-
-        return z
-
+            each_x= each_x.view(b, self.groups, -1)
+            z = torch.matmul(aff_div_C, each_x)
+            z = z.view(b, c, h, w)
+            if result_x == None:
+                result_x = z
+            else :
+                result_x = result_x + z 
+        result_x = self.norm_out(result_x)
+        result_x = self.relu(result_x)
+        return result_x
 
 def conv3x3(in_planes, out_planes, stride=1):
     """3x3 convolution with padding"""
