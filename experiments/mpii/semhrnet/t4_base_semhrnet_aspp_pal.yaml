@@ -20,7 +20,7 @@ DATASET:
   ROOT: 'data/mpii/'
   ROT_FACTOR: 30
   SCALE_FACTOR: 0.25
-  TEST_SET: test
+  TEST_SET: trainval
   TRAIN_SET: train
 MODEL:
   INIT_WEIGHTS: true
