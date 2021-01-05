@@ -42,7 +42,7 @@ class SemanticMultiGroupConv(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size=3, stride=1,
                  padding=1, dilation=1, groups=16):
         super(SemanticMultiGroupConv, self).__init__()
-
+        self.pal = 8
         self.relu = nn.ReLU(inplace=True)
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         self.in_channels = in_channels
@@ -66,7 +66,7 @@ class SemanticMultiGroupConv(nn.Module):
         self.norm = nn.ModuleList()
         self.gconv2 = nn.ModuleList()
         self.norm2 = nn.ModuleList()
-        for i in range(groups):
+        for i in range(self.pal):
             self.gconv1.append(nn.Sequential(nn.Conv2d(in_channels, out_channels, kernel_size, stride, 
                     padding, dilation, groups, bias=False)))
             self.norm.append(nn.Sequential(nn.BatchNorm2d(in_channels)))
@@ -82,8 +82,8 @@ class SemanticMultiGroupConv(nn.Module):
         """
 
         result_x = None
-        pal = 4
-        for i in range(pal): 
+
+        for i in range(self.pal): 
             each_x = self.gconv1[i](x)
             b, c, h, w = each_x.size() 
 
