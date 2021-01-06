@@ -42,7 +42,7 @@ class SemanticMultiGroupConv(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size=3, stride=1,
                  padding=1, dilation=1, groups=16):
         super(SemanticMultiGroupConv, self).__init__()
-        self.pal = 8
+        self.pal = 4
         self.relu = nn.ReLU(inplace=True)
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         self.in_channels = in_channels
