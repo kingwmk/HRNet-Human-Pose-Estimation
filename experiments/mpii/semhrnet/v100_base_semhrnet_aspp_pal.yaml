@@ -20,13 +20,13 @@ DATASET:
   ROOT: 'data/mpii/'
   ROT_FACTOR: 30
   SCALE_FACTOR: 0.25
-  TEST_SET: test
+  TEST_SET: valid
   TRAIN_SET: train
 MODEL:
   INIT_WEIGHTS: true
   NAME: base_semhrnet_aspp_1357_pal
   NUM_JOINTS: 16
-  PRETRAINED: 'models/pytorch/imagenet/hrnet_w32-36af842e.pth'
+  PRETRAINED: 'models/pytorch/pose_mpii/pose_hrnet_w32_256x256.pth'
   TARGET_TYPE: gaussian
   IMAGE_SIZE:
   - 256
