@@ -22,7 +22,7 @@ from utils.vis import save_debug_images
 
 
 logger = logging.getLogger(__name__)
-
+"""
 def get_multi_scale_outputs(cfg, model, image_resized, cfg.TEST.FLIP_TEST,
                             cfg.TEST.PROJECT2IMAGE, base_size):
     # compute output
@@ -231,7 +231,7 @@ def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criter
             writer_dict['valid_global_steps'] = global_steps + 1
 
     return perf_indicator              
-   
+"""   
 def semantic_train(config, train_loader, model, criterion, optimizer, epoch,
           output_dir, tb_log_dir, writer_dict):
     batch_time = AverageMeter()
