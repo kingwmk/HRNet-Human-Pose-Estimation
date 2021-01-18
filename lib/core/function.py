@@ -55,10 +55,43 @@ def get_multi_scale_outputs(cfg, model, image_resized, cfg.TEST.FLIP_TEST,
         
     return output
    
-def resize_align_multi_scale():
-   return
-def get_multi_scale_size():
-   return
+def resize_align_multi_scale(image, input_size, current_scale, min_scale):
+    size_resized, center, scale = get_multi_scale_size(
+        image, input_size, current_scale, min_scale
+    )
+    trans = get_affine_transform(center, scale, 0, size_resized)
+
+    image_resized = cv2.warpAffine(
+        image,
+        trans,
+        size_resized
+        # (int(w_resized), int(h_resized))
+    )
+
+    return image_resized, center, scale
+ 
+def get_multi_scale_size(image, input_size, current_scale, min_scale):
+    h, w, _ = image.shape
+    center = np.array([int(w / 2.0 + 0.5), int(h / 2.0 + 0.5)])
+
+    # calculate the size for min_scale
+    min_input_size = int((min_scale * input_size + 63)//64 * 64)
+    if w < h:
+        w_resized = int(min_input_size * current_scale / min_scale)
+        h_resized = int(
+            int((min_input_size/w*h+63)//64*64)*current_scale/min_scale
+        )
+        scale_w = w / 200.0
+        scale_h = h_resized / w_resized * w / 200.0
+    else:
+        h_resized = int(min_input_size * current_scale / min_scale)
+        w_resized = int(
+            int((min_input_size/h*w+63)//64*64)*current_scale/min_scale
+        )
+        scale_h = h / 200.0
+        scale_w = w_resized / h_resized * h / 200.0
+
+    return (w_resized, h_resized), center, np.array([scale_w, scale_h])
 
 def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criterion, output_dir,
              tb_log_dir, writer_dict=None):
@@ -86,14 +119,14 @@ def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criter
             assert 1 == input.size(0), 'Test batch size should be 1'
             input = input[0].cpu().numpy()
             base_size, center, scale = get_multi_scale_size(
-            input, cfg.DATASET.INPUT_SIZE, 1.0, min(cfg.TEST.SCALE_FACTOR))
+            input, cfg.MODEL.IMAGE_SIZE, 1.0, min(cfg.TEST.SCALE_FACTOR))
            
             final_heatmaps = None
             for idx, s in enumerate(sorted(cfg.TEST.SCALE_LIST, reverse=True)):
                 input_size = cfg.DATASET.INPUT_SIZE   
                 image_resized, center, scale = resize_align_multi_scale(
                     input, input_size, s, min(cfg.TEST.SCALE_FACTOR))
-                image_resized = transforms(image_resized)
+#                image_resized = transforms(image_resized)
                 image_resized = image_resized.unsqueeze(0).cuda()
                 
                 heatmaps = get_multi_scale_outputs(
