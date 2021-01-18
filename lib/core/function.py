@@ -50,45 +50,21 @@ def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criter
             input = input[0].cpu().numpy()
             base_size, center, scale = get_multi_scale_size(
             image, cfg.DATASET.INPUT_SIZE, 1.0, min(cfg.TEST.SCALE_FACTOR))
+           
             final_heatmaps = None
-            for idx, s in enumerate(sorted(cfg.TEST.SCALE_FACTOR, reverse=True)):
+            for idx, s in enumerate(sorted(cfg.TEST.SCALE_LIST, reverse=True)):
                 input_size = cfg.DATASET.INPUT_SIZE   
                 image_resized, center, scale = resize_align_multi_scale(
                     image, input_size, s, min(cfg.TEST.SCALE_FACTOR))
                 image_resized = transforms(image_resized)
                 image_resized = image_resized.unsqueeze(0).cuda()
                 
-                # compute output
-                _, outputs = model(input)
-            if isinstance(outputs, list):
-                output = outputs[-1]
-            else:
-                output = outputs
-
-            if config.TEST.FLIP_TEST:
-                # this part is ugly, because pytorch has not supported negative index
-                # input_flipped = model(input[:, :, :, ::-1])
-                input_flipped = np.flip(input.cpu().numpy(), 3).copy()
-                input_flipped = torch.from_numpy(input_flipped).cuda()
-                _, outputs_flipped = model(input_flipped)
-
-                if isinstance(outputs_flipped, list):
-                    output_flipped = outputs_flipped[-1]
-                else:
-                    output_flipped = outputs_flipped
-
-                output_flipped = flip_back(output_flipped.cpu().numpy(),
-                                           val_dataset.flip_pairs)
-                output_flipped = torch.from_numpy(output_flipped.copy()).cuda()
-
-
-                # feature is not aligned, shift flipped heatmap for higher accuracy
-                if config.TEST.SHIFT_HEATMAP:
-                    output_flipped[:, :, :, 1:] = \
-                        output_flipped.clone()[:, :, :, 0:-1]
-
-                output = (output + output_flipped) * 0.5
-
+                heatmaps = get_multi_stage_outputs(
+                    cfg, model, image_resized, cfg.TEST.FLIP_TEST,
+                    cfg.TEST.PROJECT2IMAGE, base_size
+                )
+                
+            final_heatmaps = final_heatmaps / float(len(cfg.TEST.SCALE_FACTOR))
             target = target.cuda(non_blocking=True)
             target_weight = target_weight.cuda(non_blocking=True)
 
@@ -179,7 +155,39 @@ def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criter
                 )
             writer_dict['valid_global_steps'] = global_steps + 1
 
-    return perf_indicator  
+    return perf_indicator            
+
+def get_multi_stage_outputs(cfg, model, image_resized, cfg.TEST.FLIP_TEST,
+                            cfg.TEST.PROJECT2IMAGE, base_size):
+    # compute output
+    _, outputs = model(image_resized)
+    if isinstance(outputs, list):
+        output = outputs[-1]
+    else:
+        output = outputs
+
+    if config.TEST.FLIP_TEST:
+        # this part is ugly, because pytorch has not supported negative index
+        # input_flipped = model(input[:, :, :, ::-1])
+        input_flipped = np.flip(image_resized.cpu().numpy(), 3).copy()
+        input_flipped = torch.from_numpy(input_flipped).cuda()
+        _, outputs_flipped = model(input_flipped)
+
+        if isinstance(outputs_flipped, list):
+            output_flipped = outputs_flipped[-1]
+        else:
+            output_flipped = outputs_flipped
+        output_flipped = flip_back(output_flipped.cpu().numpy(),
+                                           val_dataset.flip_pairs)
+        output_flipped = torch.from_numpy(output_flipped.copy()).cuda()
+        # feature is not aligned, shift flipped heatmap for higher accuracy
+        if config.TEST.SHIFT_HEATMAP:
+                output_flipped[:, :, :, 1:] = \
+                    output_flipped.clone()[:, :, :, 0:-1]
+
+        output = (output + output_flipped) * 0.5
+
+  
    
 def semantic_train(config, train_loader, model, criterion, optimizer, epoch,
           output_dir, tb_log_dir, writer_dict):
