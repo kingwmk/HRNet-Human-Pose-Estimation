@@ -116,11 +116,11 @@ def main():
 
     # evaluate on validation set
 #    if cfg.MULTI_SCALE:
-#        multi_scale_semantic_validate(cfg, valid_loader, valid_dataset, model, criterion,
-#             final_output_dir, tb_log_dir)
-#    else:
-    semantic_validate(cfg, valid_loader, valid_dataset, model, criterion,
+    multi_scale_semantic_validate(cfg, valid_loader, valid_dataset, model, criterion,
              final_output_dir, tb_log_dir)
+#    else:
+#    semantic_validate(cfg, valid_loader, valid_dataset, model, criterion,
+#             final_output_dir, tb_log_dir)
 
 
 if __name__ == '__main__':
