@@ -160,7 +160,7 @@ def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criter
                 else:
                     final_heatmaps += heatmap
                 
-            final_heatmaps = final_heatmaps / float(len(config.TEST.SCALE_FACTOR))
+            final_heatmaps = final_heatmaps / float(len(SCALE_LIST))
             target = target.cuda(non_blocking=True)
             target_weight = target_weight.cuda(non_blocking=True)
 
