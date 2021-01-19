@@ -81,7 +81,7 @@ def resize_align_multi_scale(image, input_size, current_scale, min_scale):
     return image_resized, center, scale
  
 def get_multi_scale_size(image, input_size, current_scale, min_scale):
-    _, h, w = image.shape
+    h, w, _ = image.shape
     center = np.array([int(w / 2.0 + 0.5), int(h / 2.0 + 0.5)])
 
     # calculate the size for min_scale
@@ -135,6 +135,7 @@ def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criter
             assert 1 == input.size(0), 'Test batch size should be 1'
             print(input.shape)
             input = input[0].cpu().numpy()
+            input = np.transpose(input, (1,2,0))
             print(input.shape)
             base_size, center, scale = get_multi_scale_size(
             input, config.MODEL.IMAGE_SIZE[0], 1.0, min(SCALE_LIST))
