@@ -14,7 +14,7 @@ import os
 import cv2
 import numpy as np
 import torch
-
+import torchvision.transforms
 from core.evaluate import accuracy
 from core.inference import get_final_preds
 from utils.transforms import flip_back
