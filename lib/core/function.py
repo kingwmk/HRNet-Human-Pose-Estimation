@@ -28,7 +28,7 @@ def get_multi_scale_outputs(
         project2image=False, size_projected=None):
 
     # compute output
-    _, outputs = model(image_resized)
+    _, outputs = model(image)
     if isinstance(outputs, list):
         output = outputs[-1]
     else:
@@ -37,7 +37,7 @@ def get_multi_scale_outputs(
     if config.TEST.FLIP_TEST:
         # this part is ugly, because pytorch has not supported negative index
         # input_flipped = model(input[:, :, :, ::-1])
-        input_flipped = np.flip(image_resized.cpu().numpy(), 3).copy()
+        input_flipped = np.flip(image.cpu().numpy(), 3).copy()
         input_flipped = torch.from_numpy(input_flipped).cuda()
         _, outputs_flipped = model(input_flipped)
 
