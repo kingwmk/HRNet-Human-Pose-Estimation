@@ -22,7 +22,7 @@ from utils.vis import save_debug_images
 
 
 logger = logging.getLogger(__name__)
-"""
+
 def get_multi_scale_outputs(cfg, model, image_resized, cfg.TEST.FLIP_TEST,
                             cfg.TEST.PROJECT2IMAGE, base_size):
     # compute output
@@ -51,9 +51,17 @@ def get_multi_scale_outputs(cfg, model, image_resized, cfg.TEST.FLIP_TEST,
                 output_flipped[:, :, :, 1:] = \
                     output_flipped.clone()[:, :, :, 0:-1]
 
-        output = (output + output_flipped) * 0.5
+        hm = (output + output_flipped) * 0.5
         
-    return output
+    if project2image and size_projected:
+        heatmap = torch.nn.functional.interpolate(
+                hm,
+                size=(size_projected[1], size_projected[0]),
+                mode='bilinear',
+                align_corners=False)
+
+        
+    return heatmap
    
 def resize_align_multi_scale(image, input_size, current_scale, min_scale):
     size_resized, center, scale = get_multi_scale_size(
@@ -231,7 +239,7 @@ def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criter
             writer_dict['valid_global_steps'] = global_steps + 1
 
     return perf_indicator              
-"""   
+
 def semantic_train(config, train_loader, model, criterion, optimizer, epoch,
           output_dir, tb_log_dir, writer_dict):
     batch_time = AverageMeter()
