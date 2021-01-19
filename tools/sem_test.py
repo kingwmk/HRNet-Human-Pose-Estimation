@@ -108,7 +108,8 @@ def main():
     )
     valid_loader = torch.utils.data.DataLoader(
         valid_dataset,
-        batch_size=cfg.TEST.BATCH_SIZE_PER_GPU*len(cfg.GPUS),
+#        batch_size=cfg.TEST.BATCH_SIZE_PER_GPU*len(cfg.GPUS),
+        batch_size=1
         shuffle=False,
         num_workers=cfg.WORKERS,
         pin_memory=True
