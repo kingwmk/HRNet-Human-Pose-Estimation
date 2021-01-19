@@ -170,7 +170,7 @@ def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criter
             # measure accuracy and record loss
  #           losses.update(loss.item(), num_images)
  #           _, avg_acc, cnt, pred = accuracy(final_heatmaps.cpu().numpy(),
-                                             target.cpu().numpy())
+ #                                            target.cpu().numpy())
 
  #           acc.update(avg_acc, cnt)
 
