@@ -115,7 +115,11 @@ def main():
     )
 
     # evaluate on validation set
-    multi_scale_semantic_validate(cfg, valid_loader, valid_dataset, model, criterion,
+    if cfg.MULTI_SCALE:
+        multi_scale_semantic_validate(cfg, valid_loader, valid_dataset, model, criterion,
+             final_output_dir, tb_log_dir)
+    else:
+        semantic_validate(cfg, valid_loader, valid_dataset, model, criterion,
              final_output_dir, tb_log_dir)
 
 
