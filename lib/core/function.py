@@ -11,7 +11,7 @@ from __future__ import print_function
 import time
 import logging
 import os
-
+import cv2
 import numpy as np
 import torch
 
