@@ -113,6 +113,7 @@ TEST:
   TEST.PROJECT2IMAGE: true
   POST_PROCESS: true
   SHIFT_HEATMAP: true
+  MULTI_SCALE: true
   SCALE_LIST: [0.5, 1.0, 1.5, 2.0, 2.5, 3.0]
 DEBUG:
   DEBUG: true
