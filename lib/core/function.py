@@ -148,9 +148,10 @@ def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criter
                 print(image_resized.shape)
                 image_resized = image_resized.unsqueeze(0).cuda()
                 print(image_resized.shape)
+                PROJECT2IMAGE = True
                 heatmap = get_multi_scale_outputs(
                     config, model, image_resized, config.TEST.FLIP_TEST,
-                    config.TEST.PROJECT2IMAGE, base_size
+                    PROJECT2IMAGE, base_size
                 )
                 
                 if final_heatmaps is None:
