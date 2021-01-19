@@ -112,6 +112,7 @@ TEST:
   FLIP_TEST: true
   POST_PROCESS: true
   SHIFT_HEATMAP: true
+  MULTI_SCALE: false
 DEBUG:
   DEBUG: true
   SAVE_BATCH_IMAGES_GT: true
