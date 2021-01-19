@@ -105,7 +105,7 @@ def get_multi_scale_size(image, input_size, current_scale, min_scale):
 
 def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criterion, output_dir,
              tb_log_dir, writer_dict=None):
-    config.TEST.SCALE_LIST = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0]
+    SCALE_LIST = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0]
     batch_time = AverageMeter()
     losses = AverageMeter()
     acc = AverageMeter()
@@ -129,13 +129,13 @@ def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criter
             assert 1 == input.size(0), 'Test batch size should be 1'
             input = input[0].cpu().numpy()
             base_size, center, scale = get_multi_scale_size(
-            input, config.MODEL.IMAGE_SIZE, 1.0, min(config.TEST.SCALE_LIST))
+            input, config.MODEL.IMAGE_SIZE, 1.0, min(SCALE_LIST))
            
             final_heatmaps = None
-            for idx, s in enumerate(sorted(config.TEST.SCALE_LIST, reverse=True)):
+            for idx, s in enumerate(sorted(SCALE_LIST, reverse=True)):
                 input_size = config.MODEL.IMAGE_SIZE  
                 image_resized, center, scale = resize_align_multi_scale(
-                    input, input_size, s, min(config.TEST.SCALE_LIST))
+                    input, input_size, s, min(SCALE_LIST))
 #                image_resized = transforms(image_resized)
                 image_resized = image_resized.unsqueeze(0).cuda()
                 
