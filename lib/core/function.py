@@ -127,25 +127,25 @@ def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criter
             assert 1 == input.size(0), 'Test batch size should be 1'
             input = input[0].cpu().numpy()
             base_size, center, scale = get_multi_scale_size(
-            input, cfg.MODEL.IMAGE_SIZE, 1.0, min(cfg.TEST.SCALE_FACTOR))
+            input, cfg.MODEL.IMAGE_SIZE, 1.0, min(cfg.TEST.SCALE_LIST))
            
             final_heatmaps = None
             for idx, s in enumerate(sorted(cfg.TEST.SCALE_LIST, reverse=True)):
-                input_size = cfg.DATASET.INPUT_SIZE   
+                input_size = cfg.MODEL.IMAGE_SIZE  
                 image_resized, center, scale = resize_align_multi_scale(
-                    input, input_size, s, min(cfg.TEST.SCALE_FACTOR))
+                    input, input_size, s, min(cfg.TEST.SCALE_LIST))
 #                image_resized = transforms(image_resized)
                 image_resized = image_resized.unsqueeze(0).cuda()
                 
-                heatmaps = get_multi_scale_outputs(
+                heatmap = get_multi_scale_outputs(
                     cfg, model, image_resized, cfg.TEST.FLIP_TEST,
                     cfg.TEST.PROJECT2IMAGE, base_size
                 )
                 
                 if final_heatmaps is None:
-                    final_heatmaps = heatmaps
+                    final_heatmaps = heatmap
                 else:
-                    final_heatmaps += heatmaps
+                    final_heatmaps += heatmap
                 
             final_heatmaps = final_heatmaps / float(len(cfg.TEST.SCALE_FACTOR))
             target = target.cuda(non_blocking=True)
