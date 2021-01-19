@@ -164,15 +164,15 @@ def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criter
             target = target.cuda(non_blocking=True)
             target_weight = target_weight.cuda(non_blocking=True)
 
-            loss = criterion(final_heatmaps, target, target_weight)
+#            loss = criterion(final_heatmaps, target, target_weight)
 
             num_images = input.size(0)
             # measure accuracy and record loss
-            losses.update(loss.item(), num_images)
-            _, avg_acc, cnt, pred = accuracy(final_heatmaps.cpu().numpy(),
+ #           losses.update(loss.item(), num_images)
+ #           _, avg_acc, cnt, pred = accuracy(final_heatmaps.cpu().numpy(),
                                              target.cpu().numpy())
 
-            acc.update(avg_acc, cnt)
+ #           acc.update(avg_acc, cnt)
 
             # measure elapsed time
             batch_time.update(time.time() - end)
