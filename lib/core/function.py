@@ -24,7 +24,7 @@ from utils.vis import save_debug_images
 logger = logging.getLogger(__name__)
 
 def get_multi_scale_outputs(
-        cfg, model, image, with_flip=False,
+        config, model, image, with_flip=False,
         project2image=False, size_projected=None):
 
     # compute output
@@ -105,7 +105,7 @@ def get_multi_scale_size(image, input_size, current_scale, min_scale):
 
 def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criterion, output_dir,
              tb_log_dir, writer_dict=None):
- 
+    config.TEST.SCALE_LIST = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0]
     batch_time = AverageMeter()
     losses = AverageMeter()
     acc = AverageMeter()
@@ -129,19 +129,19 @@ def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criter
             assert 1 == input.size(0), 'Test batch size should be 1'
             input = input[0].cpu().numpy()
             base_size, center, scale = get_multi_scale_size(
-            input, cfg.MODEL.IMAGE_SIZE, 1.0, min(cfg.TEST.SCALE_LIST))
+            input, config.MODEL.IMAGE_SIZE, 1.0, min(config.TEST.SCALE_LIST))
            
             final_heatmaps = None
-            for idx, s in enumerate(sorted(cfg.TEST.SCALE_LIST, reverse=True)):
-                input_size = cfg.MODEL.IMAGE_SIZE  
+            for idx, s in enumerate(sorted(config.TEST.SCALE_LIST, reverse=True)):
+                input_size = config.MODEL.IMAGE_SIZE  
                 image_resized, center, scale = resize_align_multi_scale(
-                    input, input_size, s, min(cfg.TEST.SCALE_LIST))
+                    input, input_size, s, min(config.TEST.SCALE_LIST))
 #                image_resized = transforms(image_resized)
                 image_resized = image_resized.unsqueeze(0).cuda()
                 
                 heatmap = get_multi_scale_outputs(
-                    cfg, model, image_resized, cfg.TEST.FLIP_TEST,
-                    cfg.TEST.PROJECT2IMAGE, base_size
+                    config, model, image_resized, config.TEST.FLIP_TEST,
+                    config.TEST.PROJECT2IMAGE, base_size
                 )
                 
                 if final_heatmaps is None:
@@ -149,7 +149,7 @@ def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criter
                 else:
                     final_heatmaps += heatmap
                 
-            final_heatmaps = final_heatmaps / float(len(cfg.TEST.SCALE_FACTOR))
+            final_heatmaps = final_heatmaps / float(len(config.TEST.SCALE_FACTOR))
             target = target.cuda(non_blocking=True)
             target_weight = target_weight.cuda(non_blocking=True)
 
