@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 def get_multi_scale_outputs(
         config, model, image, with_flip=False,
-        project2image=False, size_projected=None):
+        project2image=False, size_projected=None, val_dataset=None):
 
     # compute output
     _, outputs = model(image)
@@ -152,7 +152,7 @@ def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criter
                 PROJECT2IMAGE = True
                 heatmap = get_multi_scale_outputs(
                     config, model, image_resized, config.TEST.FLIP_TEST,
-                    PROJECT2IMAGE, base_size
+                    PROJECT2IMAGE, base_size, val_dataset
                 )
                 
                 if final_heatmaps is None:
