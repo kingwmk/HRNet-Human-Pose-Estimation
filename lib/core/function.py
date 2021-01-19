@@ -143,8 +143,9 @@ def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criter
                 image_resized, center, scale = resize_align_multi_scale(
                     input, input_size, s, min(SCALE_LIST))
                 image_resized = transforms(image_resized)
+                print(image_resized.shape)
                 image_resized = image_resized.unsqueeze(0).cuda()
-                
+                print(image_resized.shape)
                 heatmap = get_multi_scale_outputs(
                     config, model, image_resized, config.TEST.FLIP_TEST,
                     config.TEST.PROJECT2IMAGE, base_size
