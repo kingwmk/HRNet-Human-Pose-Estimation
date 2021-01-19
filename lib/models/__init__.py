@@ -22,7 +22,7 @@ import models.base_semhrnet_aspp_pal
 #import models.pose_semnet
 #import models.semconvhrnet
 #import models.semconvhrnet_cat
-#import models.base_semhrnet
+import models.base_semhrnet
 #import models.t4_base_semhrnet_aspp_block
 #import models.base_semhrnet2
 #import models.semconvhrnet_mingyuan
