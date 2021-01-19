@@ -19,6 +19,7 @@ from config import cfg
 from config import update_config
 from core.loss import JointsMSELoss
 from core.function import semantic_validate
+from core.function import multi_scale_semantic_validate
 from utils.utils import create_logger
 
 import dataset
