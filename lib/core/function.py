@@ -183,9 +183,11 @@ def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criter
             preds, maxvals = get_final_preds(
                 config, final_heatmaps.clone().cpu().numpy(), c, s)
             print(preds)
+            print(preds.shape)
             all_preds[idx:idx + num_images, :, 0:2] = preds[:, :, 0:2]
             all_preds[idx:idx + num_images, :, 2:3] = maxvals
             print(all_preds)
+            print(all_preds.shape)
            
             # double check this all_boxes parts
             all_boxes[idx:idx + num_images, 0:2] = c[:, 0:2]
