@@ -23,8 +23,10 @@ from utils.vis import save_debug_images
 
 logger = logging.getLogger(__name__)
 
-def get_multi_scale_outputs(cfg, model, image_resized, cfg.TEST.FLIP_TEST,
-                            cfg.TEST.PROJECT2IMAGE, base_size):
+def get_multi_scale_outputs(
+        cfg, model, image, with_flip=False,
+        project2image=False, size_projected=None):
+
     # compute output
     _, outputs = model(image_resized)
     if isinstance(outputs, list):
