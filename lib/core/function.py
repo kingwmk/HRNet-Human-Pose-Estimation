@@ -133,10 +133,12 @@ def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criter
         end = time.time()
         for i, (input, target, target_weight, meta) in enumerate(val_loader):
             assert 1 == input.size(0), 'Test batch size should be 1'
+            print(input.shape)
             input = input[0].cpu().numpy()
+            print(input.shape)
             base_size, center, scale = get_multi_scale_size(
             input, config.MODEL.IMAGE_SIZE[0], 1.0, min(SCALE_LIST))
-           
+            
             final_heatmaps = None
             for idx, s in enumerate(sorted(SCALE_LIST, reverse=True)):
                 input_size = config.MODEL.IMAGE_SIZE[0]  
