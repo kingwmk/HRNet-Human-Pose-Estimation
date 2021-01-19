@@ -186,7 +186,7 @@ def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criter
             print(preds.shape)
             all_preds[idx:idx + num_images, :, 0:2] = preds[:, :, 0:2]
             all_preds[idx:idx + num_images, :, 2:3] = maxvals
-            print(all_preds)
+            print(all_preds[idx])
             print(all_preds.shape)
            
             # double check this all_boxes parts
