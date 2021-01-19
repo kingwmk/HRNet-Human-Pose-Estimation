@@ -19,7 +19,7 @@ from core.evaluate import accuracy
 from core.inference import get_final_preds
 from utils.transforms import flip_back
 from utils.vis import save_debug_images
-
+from utils.transforms import get_affine_transform
 
 logger = logging.getLogger(__name__)
 
