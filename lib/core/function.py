@@ -141,6 +141,8 @@ def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criter
             
             final_heatmaps = None
             for idx, s in enumerate(sorted(SCALE_LIST, reverse=True)):
+                if idx==2:
+                    break
                 input_size = config.MODEL.IMAGE_SIZE[0]  
                 image_resized, center, scale = resize_align_multi_scale(
                     input, input_size, s, min(SCALE_LIST))
@@ -212,7 +214,8 @@ def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criter
                 )
 #                save_debug_images(config, input, meta, target, pred*4, final_heatmaps,
 #                                  prefix)
-
+        print(all_preds.shape)
+        print(all_preds[0])
         name_values, perf_indicator = val_dataset.evaluate(
             config, all_preds, output_dir, all_boxes, image_path,
             filenames, imgnums
