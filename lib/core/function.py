@@ -122,7 +122,7 @@ def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criter
     image_path = []
     filenames = []
     imgnums = []
-    idx = 0
+    id = 0
     transforms = torchvision.transforms.Compose(
             [
                 torchvision.transforms.ToTensor(),
@@ -186,19 +186,19 @@ def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criter
                 config, final_heatmaps.clone().cpu().numpy(), c, s)
             print(preds)
             print(preds.shape)
-            all_preds[idx:idx + num_images, :, 0:2] = preds[:, :, 0:2]
-            all_preds[idx:idx + num_images, :, 2:3] = maxvals
-            print(all_preds[idx])
+            all_preds[id:id + num_images, :, 0:2] = preds[:, :, 0:2]
+            all_preds[id:id + num_images, :, 2:3] = maxvals
+            print(all_preds[id])
             print(all_preds.shape)
            
             # double check this all_boxes parts
-            all_boxes[idx:idx + num_images, 0:2] = c[:, 0:2]
-            all_boxes[idx:idx + num_images, 2:4] = s[:, 0:2]
-            all_boxes[idx:idx + num_images, 4] = np.prod(s*200, 1)
-            all_boxes[idx:idx + num_images, 5] = score
+            all_boxes[id:id + num_images, 0:2] = c[:, 0:2]
+            all_boxes[id:id + num_images, 2:4] = s[:, 0:2]
+            all_boxes[id:id + num_images, 4] = np.prod(s*200, 1)
+            all_boxes[id:id + num_images, 5] = score
             image_path.extend(meta['image'])
 
-            idx += num_images
+            id += num_images
 
             if i % config.PRINT_FREQ == 0:
                 msg = 'Test: [{0}/{1}]\t' \
