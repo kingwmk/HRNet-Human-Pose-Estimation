@@ -132,6 +132,8 @@ def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criter
     with torch.no_grad():
         end = time.time()
         for i, (input, target, target_weight, meta) in enumerate(val_loader):
+            if i==2:
+                break
             num_images = input.size(0)
             assert 1 == input.size(0), 'Test batch size should be 1'
             input = input[0].cpu().numpy()
@@ -141,8 +143,6 @@ def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criter
             
             final_heatmaps = None
             for idx, s in enumerate(sorted(SCALE_LIST, reverse=True)):
-                if idx==2:
-                    break
                 input_size = config.MODEL.IMAGE_SIZE[0]  
                 image_resized, center, scale = resize_align_multi_scale(
                     input, input_size, s, min(SCALE_LIST))
