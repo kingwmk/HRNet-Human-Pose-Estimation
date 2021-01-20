@@ -184,13 +184,9 @@ def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criter
 
             preds, maxvals = get_final_preds(
                 config, final_heatmaps.clone().cpu().numpy(), c, s)
-            print(preds)
-            print(preds.shape)
             all_preds[id:id + num_images, :, 0:2] = preds[:, :, 0:2]
             all_preds[id:id + num_images, :, 2:3] = maxvals
-            print(all_preds[id])
-            print(all_preds.shape)
-           
+
             # double check this all_boxes parts
             all_boxes[id:id + num_images, 0:2] = c[:, 0:2]
             all_boxes[id:id + num_images, 2:4] = s[:, 0:2]
@@ -214,8 +210,6 @@ def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criter
                 )
 #                save_debug_images(config, input, meta, target, pred*4, final_heatmaps,
 #                                  prefix)
-        print(all_preds.shape)
-        print(all_preds[1])
         name_values, perf_indicator = val_dataset.evaluate(
             config, all_preds, output_dir, all_boxes, image_path,
             filenames, imgnums
