@@ -105,8 +105,9 @@ def get_multi_scale_size(image, input_size, current_scale, min_scale):
 
 def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criterion, output_dir,
              tb_log_dir, writer_dict=None):
-    SCALE_LIST = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0]
-    batch_time = AverageMeter()
+#    SCALE_LIST = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0]
+ SCALE_LIST = [0.5, 1.0, 1.5]
+ batch_time = AverageMeter()
     losses = AverageMeter()
     acc = AverageMeter()
 
@@ -132,12 +133,12 @@ def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criter
     with torch.no_grad():
         end = time.time()
         for i, (input, target, target_weight, meta) in enumerate(val_loader):
-            print("data_loader input:" + str(input.shape))
+#            print("data_loader input:" + str(input.shape))
             num_images = input.size(0)
             assert 1 == input.size(0), 'Test batch size should be 1'
             input = input[0].cpu().numpy()
             input = np.transpose(input, (1,2,0))
-            print("transposed input:" + str(input.shape))
+#            print("transposed input:" + str(input.shape))
             base_size, center, scale = get_multi_scale_size(
             input, config.MODEL.IMAGE_SIZE[0], 1.0, min(SCALE_LIST))
             
@@ -148,7 +149,7 @@ def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criter
                     input, input_size, s, min(SCALE_LIST))
                 image_resized = transforms(image_resized)
                 image_resized = image_resized.unsqueeze(0).cuda()
-                print("model input:" + str(image_resized.shape))
+#                print("model input:" + str(image_resized.shape))
                 PROJECT2IMAGE = True
                 
                 heatmap = get_multi_scale_outputs(
