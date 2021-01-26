@@ -133,29 +133,33 @@ def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criter
     with torch.no_grad():
         end = time.time()
         for i, (input, target, target_weight, meta) in enumerate(val_loader):
-#            print("data_loader input:" + str(input.shape))
+            print("meta center:"+str(meta['center'])+"meta scale:"+str(meta['scale']))
+            print("data_loader input shape:" + str(input.shape))
             num_images = input.size(0)
             assert 1 == input.size(0), 'Test batch size should be 1'
             input = input[0].cpu().numpy()
             input = np.transpose(input, (1,2,0))
-#            print("transposed input:" + str(input.shape))
+            print("transposed input:" + str(input.shape))
             base_size, center, scale = get_multi_scale_size(
             input, config.MODEL.IMAGE_SIZE[0], 1.0, min(SCALE_LIST))
+            print("transformed base_size:"+str(base_size)+", center:"+str(center)+",scale:"+str(scale))
             
             final_heatmaps = None
             for idx, s in enumerate(sorted(SCALE_LIST, reverse=True)):
                 input_size = config.MODEL.IMAGE_SIZE[0]  
                 image_resized, center, scale = resize_align_multi_scale(
                     input, input_size, s, min(SCALE_LIST))
+                print()
                 image_resized = transforms(image_resized)
                 image_resized = image_resized.unsqueeze(0).cuda()
-#                print("model input:" + str(image_resized.shape))
+                print("model input shape:" + str(image_resized.shape))
                 PROJECT2IMAGE = True
                 
                 heatmap = get_multi_scale_outputs(
                     config, model, image_resized, config.TEST.FLIP_TEST,
                     PROJECT2IMAGE, base_size, val_dataset
                 )
+                print("heatmap shape"+str(idx)+":"+str(heatmap.shape))
                 
                 if final_heatmaps is None:
                     final_heatmaps = heatmap
