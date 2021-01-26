@@ -157,7 +157,7 @@ def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criter
                 
                 heatmap = get_multi_scale_outputs(
                     config, model, image_resized, config.TEST.FLIP_TEST,
-                    PROJECT2IMAGE, [64,64], val_dataset
+                    PROJECT2IMAGE, ([64,64]), val_dataset
                 )
 #                print("heatmap shape"+str(idx)+":"+str(heatmap.shape))
                 
