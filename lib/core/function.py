@@ -185,7 +185,7 @@ def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criter
             end = time.time()
 
             c = meta['center'].numpy()
-            s = meta['scale'].numpy()*scale
+            s = meta['scale'].numpy()
             score = meta['score'].numpy()
 
             preds, maxvals = get_final_preds(
