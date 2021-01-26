@@ -53,11 +53,11 @@ def get_multi_scale_outputs(
                 output_flipped[:, :, :, 1:] = \
                     output_flipped.clone()[:, :, :, 0:-1]
 
-        hm = (output + output_flipped) * 0.5
+        heatmap = (output + output_flipped) * 0.5
         
     if project2image and size_projected:
         heatmap = torch.nn.functional.interpolate(
-                hm,
+                heatmap,
                 size=(size_projected[1], size_projected[0]),
                 mode='bilinear',
                 align_corners=False)
