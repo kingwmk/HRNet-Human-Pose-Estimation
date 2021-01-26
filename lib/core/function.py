@@ -186,6 +186,7 @@ def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criter
 
             c = meta['center'].numpy()
             s = meta['scale'].numpy()*scale
+            print(str(s))
             score = meta['score'].numpy()
 
             preds, maxvals = get_final_preds(
