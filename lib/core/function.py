@@ -106,7 +106,7 @@ def get_multi_scale_size(image, input_size, current_scale, min_scale):
 def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criterion, output_dir,
              tb_log_dir, writer_dict=None):
 #    SCALE_LIST = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0]
-    SCALE_LIST = [1.2]
+    SCALE_LIST = [0.75, 0.8, 0.9, 1.0]
     batch_time = AverageMeter()
     losses = AverageMeter()
     acc = AverageMeter()
@@ -153,11 +153,11 @@ def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criter
                 image_resized = transforms(image_resized)
                 image_resized = image_resized.unsqueeze(0).cuda()
 #                print("model input shape:" + str(image_resized.shape))
-                PROJECT2IMAGE = False
+                PROJECT2IMAGE = True
                 
                 heatmap = get_multi_scale_outputs(
                     config, model, image_resized, config.TEST.FLIP_TEST,
-                    PROJECT2IMAGE, base_size, val_dataset
+                    PROJECT2IMAGE, [64,64], val_dataset
                 )
 #                print("heatmap shape"+str(idx)+":"+str(heatmap.shape))
                 
