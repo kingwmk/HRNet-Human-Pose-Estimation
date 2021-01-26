@@ -124,11 +124,20 @@ def multi_scale_semantic_validate(config, val_loader, val_dataset, model, criter
     filenames = []
     imgnums = []
     id = 0
+#    transforms = torchvision.transforms.Compose(
+#            [
+#                torchvision.transforms.ToTensor(),
+#            ]
+#        )
+    
     transforms = torchvision.transforms.Compose(
             [
                 torchvision.transforms.ToTensor(),
+                torchvision.transforms.Normalize(
+                    mean=[0.485, 0.456, 0.406],
+                    std=[0.229, 0.224, 0.225]
+                )
             ]
-        )
     
     with torch.no_grad():
         end = time.time()
