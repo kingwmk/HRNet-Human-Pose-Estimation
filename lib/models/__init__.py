@@ -14,6 +14,7 @@ from __future__ import print_function
 
 import models.base_semhrnet_aspp_1357_pal
 import models.base_semhrnet_aspp_pal
+import models.pose_hrnet
 #import models.pose_resnet
 #import models.base_semhrnet_aspp_pal_bone
 #import models.semconvhrnet_aspp
