@@ -16,13 +16,13 @@ from collections import OrderedDict
 import numpy as np
 from scipy.io import loadmat, savemat
 
-from dataset.JointsDataset import JointsDataset
-
+#from dataset.JointsDataset import JointsDataset
+from dataset.Multi_scale_JointsDataset import Multi_scale_JointsDataset
 
 logger = logging.getLogger(__name__)
 
 
-class MPIIDataset(JointsDataset):
+class MPIIDataset(Multi_scale_JointsDataset):
     def __init__(self, cfg, root, image_set, is_train, transform=None, multi_scale_test=False, multi_scale_list=[1]):
         super().__init__(cfg, root, image_set, is_train, transform, multi_scale_test=False, multi_scale_list=[1])
 
