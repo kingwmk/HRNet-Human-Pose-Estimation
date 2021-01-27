@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 
 class JointsDataset(Dataset):
-    def __init__(self, cfg, root, image_set, is_train, transform=None):
+    def __init__(self, cfg, root, image_set, is_train, transform=None, multi_scale_test=False, multi_scale_list=[1]):
         self.num_joints = 0
         self.pixel_std = 200
         self.flip_pairs = []
@@ -52,7 +52,8 @@ class JointsDataset(Dataset):
         self.sigma = cfg.MODEL.SIGMA
         self.use_different_joints_weight = cfg.LOSS.USE_DIFFERENT_JOINTS_WEIGHT
         self.joints_weight = 1
-
+        self.multi_scale_test=multi_scale_test
+        self.multi_scale_list = multi_scale_list
         self.transform = transform
         self.db = []
 
@@ -163,7 +164,48 @@ class JointsDataset(Dataset):
                 joints, joints_vis = fliplr_joints(
                     joints, joints_vis, data_numpy.shape[1], self.flip_pairs)
                 c[0] = data_numpy.shape[1] - c[0] - 1
+        
+        if self.multi_scale_test:
+            inputs =[]
+            targets =[]
+            target_weights=[]
+            metas = []
+            for scale in self.multi_scale_list:
+                s = s*scale
+                trans = get_affine_transform(c, s, r, self.image_size)
+                input = cv2.warpAffine(
+                    data_numpy,
+                    trans,
+                    (int(self.image_size[0]), int(self.image_size[1])),
+                    flags=cv2.INTER_LINEAR)
+                if self.transform:
+                    input = self.transform(input)     
+                for i in range(self.num_joints):
+                    if joints_vis[i, 0] > 0.0:
+                        joints[i, 0:2] = affine_transform(joints[i, 0:2], trans)
 
+                target, target_weight = self.generate_target(joints, joints_vis)
+
+                target = torch.from_numpy(target)
+                target_weight = torch.from_numpy(target_weight)
+
+                meta = {
+                  'image': image_file,
+                  'filename': filename,
+                  'imgnum': imgnum,
+                  'joints': joints,
+                  'joints_vis': joints_vis,
+                  'center': c,
+                  'scale': s,
+                  'rotation': r,
+                  'score': score
+                 }
+                inputs.append(input)
+                targets.append(target)
+                target_weights.append(target_weight)
+                metas.append(meta)
+            return inputs, targets, target_weights, metas  
+        
         trans = get_affine_transform(c, s, r, self.image_size)
         input = cv2.warpAffine(
             data_numpy,
