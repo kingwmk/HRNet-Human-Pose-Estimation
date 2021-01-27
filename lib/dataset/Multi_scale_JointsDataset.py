@@ -25,7 +25,7 @@ from utils.transforms import fliplr_joints
 logger = logging.getLogger(__name__)
 
 
-class JointsDataset(Dataset):
+class Multi_scale_JointsDataset(Dataset):
     def __init__(self, cfg, root, image_set, is_train, transform=None, multi_scale_test=False, multi_scale_list=[1]):
         self.num_joints = 0
         self.pixel_std = 200
