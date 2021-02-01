@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 import random
-random.seed (42)
+
 
 import argparse
 import os
@@ -31,6 +31,12 @@ from utils.utils import get_model_summary
 
 import dataset
 import models
+
+seed = 42
+torch.manual_seed(seed)
+torch.cuda.manual_seed(seed)
+np.random.seed(seed)
+random.seed(seed)
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train keypoints network')
@@ -69,8 +75,7 @@ def parse_args():
 
 
 def main():
-#    torch.manual_seed(317)
-    torch.manual_seed(42)
+
     args = parse_args()
     start_time = str(datetime.datetime.now())
     update_config(cfg, args)
