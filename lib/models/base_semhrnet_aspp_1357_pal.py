@@ -42,7 +42,7 @@ class SemanticMultiGroupConv(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size=3, stride=1,
                  padding=1, dilation=1, groups=16):
         super(SemanticMultiGroupConv, self).__init__()
-        self.pal = 8
+        self.pal = 4
         self.relu = nn.ReLU(inplace=True)
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         self.in_channels = in_channels
@@ -58,7 +58,7 @@ class SemanticMultiGroupConv(nn.Module):
                 "head number can not be divided by input channels"
         assert self.out_channels % self.groups == 0, \
                 "head number can not be divided by output channels"
-        self.grid = 25
+        self.grid = 16
         aff_out_channels = self.grid * out_channels
 
         
