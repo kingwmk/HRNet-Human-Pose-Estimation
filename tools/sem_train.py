@@ -17,7 +17,7 @@ import torch.utils.data
 import torch.utils.data.distributed
 import torchvision.transforms as transforms
 from tensorboardX import SummaryWriter
-
+import numpy as np
 import _init_paths
 from config import cfg
 from config import update_config
