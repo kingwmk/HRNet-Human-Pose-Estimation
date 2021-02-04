@@ -33,7 +33,7 @@ from utils.utils import get_optimizer
 from utils.utils import save_checkpoint
 from utils.utils import create_logger
 from utils.utils import get_model_summary
-
+import numpy as np
 import dataset
 import models
 
